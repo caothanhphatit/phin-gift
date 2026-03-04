@@ -1,18 +1,20 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function HeroSection() {
+    const t = useTranslations('home');
     return (
         <section className="relative min-h-screen flex items-center overflow-hidden">
             {/* Background Image */}
             <div className="absolute inset-0">
                 <Image
                     src="/images/hero/phin-coffee-pour.jpg"
-                    alt="Cà phê phin Việt Nam – PhinGift"
+                    alt={t('heroTitle')}
                     fill
                     priority
                     className="object-cover"
@@ -52,8 +54,7 @@ export default function HeroSection() {
                         transition={{ duration: 0.8, delay: 0.6 }}
                         className="text-white/75 text-lg leading-relaxed mb-10 max-w-lg"
                     >
-                        Phin cà phê khắc logo theo yêu cầu – kết hợp nghệ thuật thủ công và công nghệ laser hiện đại.
-                        Từ inox 304 cao cấp đến nhôm anodize đa màu sắc.
+                        {t('heroDesc')}
                     </motion.p>
 
                     <motion.div
@@ -66,7 +67,7 @@ export default function HeroSection() {
                             href="/products"
                             className="btn-primary group"
                         >
-                            Khám Phá Bộ Sưu Tập
+                            {t('collection')}
                             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                         </Link>
                         <Link

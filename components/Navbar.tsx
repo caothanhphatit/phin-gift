@@ -1,27 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Link, usePathname, useRouter } from '@/i18n/routing';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Menu, X, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Menu, X, ChevronDown, Globe } from 'lucide-react';
 import { useCart } from '@/lib/cart-context';
-
-const navLinks = [
-    { label: 'Trang Chủ', href: '/' },
-    {
-        label: 'Sản Phẩm',
-        href: '/products',
-        dropdown: [
-            { label: 'Phin Cà Phê Inox', href: '/products/phin-ca-phe-inox' },
-            { label: 'Phin Cà Phê Nhôm', href: '/products/phin-ca-phe-nhom' },
-            { label: 'Phin Khắc Logo', href: '/products/phin-ca-phe-khac-logo' },
-        ],
-    },
-    { label: 'Blog', href: '/blog' },
-    { label: 'Về Chúng Tôi', href: '/about' },
-    { label: 'Liên Hệ', href: '/contact' },
-];
+import { useTranslations, useLocale } from 'next-intl';
 
 export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -29,7 +13,27 @@ export default function Navbar() {
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
     const { totalItems } = useCart();
     const pathname = usePathname();
+    const router = useRouter();
+    const locale = useLocale();
+    const t = useTranslations('nav');
+
     const isHomePage = pathname === '/';
+
+    const navLinks = [
+        { label: t('home'), href: '/' },
+        {
+            label: t('products'),
+            href: '/products',
+            dropdown: [
+                { label: t('inox_filter'), href: '/products?category=inox' },
+                { label: t('aluminum_filter'), href: '/products?category=nhom' },
+                { label: t('custom_logo'), href: '/products/phin-ca-phe-khac-logo' },
+            ],
+        },
+        { label: t('blog'), href: '/blog' },
+        { label: t('about'), href: '/about' },
+        { label: t('contact'), href: '/contact' },
+    ];
 
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -47,6 +51,10 @@ export default function Navbar() {
             ? 'bg-[var(--color-brown-dark)]/95 backdrop-blur-md shadow-md'
             : 'bg-transparent'
         : 'bg-[var(--color-brown-dark)] shadow-md';
+
+    const changeLanguage = (newLocale: string) => {
+        router.replace(pathname, { locale: newLocale });
+    };
 
     return (
         <>
@@ -120,6 +128,23 @@ export default function Navbar() {
 
                         {/* Right actions */}
                         <div className="flex items-center gap-3">
+                            {/* Language Switcher */}
+                            <div className="hidden md:flex items-center text-xs font-semibold text-white/80 border border-white/20 rounded p-1 mx-2">
+                                <button
+                                    onClick={() => changeLanguage('vi')}
+                                    className={`px-2 py-1 tracking-wider ${locale === 'vi' ? 'bg-white/20 text-white rounded-sm' : 'hover:text-white'}`}
+                                >
+                                    VI
+                                </button>
+                                <span className="opacity-30">|</span>
+                                <button
+                                    onClick={() => changeLanguage('en')}
+                                    className={`px-2 py-1 tracking-wider ${locale === 'en' ? 'bg-white/20 text-white rounded-sm' : 'hover:text-white'}`}
+                                >
+                                    EN
+                                </button>
+                            </div>
+
                             <Link
                                 href="/cart"
                                 className="relative text-white/80 hover:text-white transition-colors p-2"
@@ -169,12 +194,30 @@ export default function Navbar() {
                             className="fixed right-0 top-0 bottom-0 z-50 w-[300px] bg-[var(--color-brown-dark)] flex flex-col"
                         >
                             <div className="flex items-center justify-between px-6 h-16">
-                                <span className="font-serif text-white text-lg">Menu</span>
+                                <span className="font-serif text-white text-lg">{t('menu')}</span>
                                 <button onClick={() => setIsMobileOpen(false)} className="text-white/70 hover:text-white p-1">
                                     <X size={20} />
                                 </button>
                             </div>
-                            <div className="flex-1 overflow-y-auto py-4">
+
+                            {/* Mobile Language Switcher */}
+                            <div className="flex items-center justify-center gap-4 py-4 border-b border-white/5 mx-6">
+                                <button
+                                    onClick={() => changeLanguage('vi')}
+                                    className={`flex items-center gap-2 text-sm font-semibold tracking-wider ${locale === 'vi' ? 'text-[var(--color-gold)]' : 'text-white/60'}`}
+                                >
+                                    Tiếng Việt {locale === 'vi' && '✓'}
+                                </button>
+                                <span className="text-white/20">|</span>
+                                <button
+                                    onClick={() => changeLanguage('en')}
+                                    className={`flex items-center gap-2 text-sm font-semibold tracking-wider ${locale === 'en' ? 'text-[var(--color-gold)]' : 'text-white/60'}`}
+                                >
+                                    English {locale === 'en' && '✓'}
+                                </button>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto py-2">
                                 {navLinks.map((link) => (
                                     <div key={link.href}>
                                         <Link
@@ -202,7 +245,7 @@ export default function Navbar() {
                             </div>
                             <div className="p-6 border-t border-white/10">
                                 <Link href="/cart" className="btn-outline-light w-full justify-center text-center">
-                                    Giỏ Hàng {totalItems > 0 && `(${totalItems})`}
+                                    {t('cart')} {totalItems > 0 && `(${totalItems})`}
                                 </Link>
                             </div>
                         </motion.div>

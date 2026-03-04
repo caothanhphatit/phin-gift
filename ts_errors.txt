@@ -1,0 +1,14 @@
+﻿.next/types/validator.ts(25,44): error TS2344: Type 'Route' does not satisfy the constraint '"/[locale]"'.
+  Type '"/"' is not assignable to type '"/[locale]"'.
+.next/types/validator.ts(25,75): error TS2344: Type 'Route' does not satisfy the constraint '"/[locale]"'.
+  Type '"/"' is not assignable to type '"/[locale]"'.
+.next/types/validator.ts(53,39): error TS2307: Cannot find module '../../app/about/page.js' or its corresponding type declarations.
+.next/types/validator.ts(62,39): error TS2307: Cannot find module '../../app/blog/[slug]/page.js' or its corresponding type declarations.
+.next/types/validator.ts(71,39): error TS2307: Cannot find module '../../app/blog/page.js' or its corresponding type declarations.
+.next/types/validator.ts(80,39): error TS2307: Cannot find module '../../app/cart/page.js' or its corresponding type declarations.
+.next/types/validator.ts(89,39): error TS2307: Cannot find module '../../app/checkout/page.js' or its corresponding type declarations.
+.next/types/validator.ts(98,39): error TS2307: Cannot find module '../../app/contact/page.js' or its corresponding type declarations.
+.next/types/validator.ts(107,39): error TS2307: Cannot find module '../../app/page.js' or its corresponding type declarations.
+.next/types/validator.ts(116,39): error TS2307: Cannot find module '../../app/products/[slug]/page.js' or its corresponding type declarations.
+.next/types/validator.ts(125,39): error TS2307: Cannot find module '../../app/products/page.js' or its corresponding type declarations.
+.next/types/validator.ts(147,39): error TS2307: Cannot find module '../../app/layout.js' or its corresponding type declarations.

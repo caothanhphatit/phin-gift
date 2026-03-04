@@ -1,41 +1,68 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ShoppingCart, ChevronDown, ChevronUp, Check } from 'lucide-react';
-import { Product, ProductMaterial, ProductSize, materialLabels, sizeLabels, getProductPrice } from '@/lib/products';
+import { ShoppingCart, Check } from 'lucide-react';
+import { ProductSheet } from '@/lib/gsheets';
 import { useCart } from '@/lib/cart-context';
+import { useLocale } from 'next-intl';
 
 interface ProductDetailClientProps {
-    product: Product;
+    product: ProductSheet;
 }
 
 export default function ProductDetailClient({ product }: ProductDetailClientProps) {
+    const locale = useLocale() as 'vi' | 'en';
+    const title = product.title[locale] || product.title['vi'];
+    const desc = product.description[locale] || product.description['vi'];
+
+    // Fallbacks to generic images if variant missing
+    const defaultImage = '/images/products/phin-collection.jpg';
+
+    const availableSizes = useMemo(() => {
+        const sizes = new Set<string>();
+        product.variants.forEach(v => {
+            if (v.size) sizes.add(v.size);
+        });
+        return Array.from(sizes);
+    }, [product]);
+
+    const availableColors = useMemo(() => {
+        const colors = new Set<string>();
+        product.variants.forEach(v => {
+            if (v.color) colors.add(v.color);
+        });
+        return Array.from(colors);
+    }, [product]);
+
+    const aggregatedImages = useMemo(() => {
+        const imgs = product.variants.map(v => v.image).filter(Boolean);
+        return imgs.length > 0 ? imgs : [defaultImage];
+    }, [product, defaultImage]);
+
     const [selectedImage, setSelectedImage] = useState(0);
-    const [selectedMaterial, setSelectedMaterial] = useState<ProductMaterial>(product.variants[0]?.material ?? 'inox');
-    const [selectedSize, setSelectedSize] = useState<ProductSize>(product.variants[0]?.size ?? '150ml');
+    const [selectedSize, setSelectedSize] = useState<string>(availableSizes[0] || '150ml');
+    const [selectedColor, setSelectedColor] = useState<string>(availableColors[0] || 'silver');
     const [engravingText, setEngravingText] = useState('');
-    const [openFaq, setOpenFaq] = useState<number | null>(null);
     const [addedToCart, setAddedToCart] = useState(false);
+
     const { addToCart } = useCart();
 
-    const availableMaterials = [...new Set(product.variants.map((v) => v.material))];
-    const availableSizes = [...new Set(product.variants.map((v) => v.size))];
-    const price = getProductPrice(product, selectedMaterial, selectedSize);
+    const price = product.price || 0;
 
     const handleAddToCart = () => {
         addToCart({
             productId: product.id,
             productSlug: product.slug,
-            productName: product.name,
-            material: selectedMaterial,
-            materialLabel: materialLabels[selectedMaterial],
-            size: selectedSize,
+            productName: title,
+            material: product.category as any,
+            materialLabel: product.category === 'inox' ? 'Inox' : 'Nhôm', // Or adapt dynamically based on locale
+            size: selectedSize as any,
             engravingText,
             price,
             quantity: 1,
-            image: product.images[0],
+            image: aggregatedImages[selectedImage] || defaultImage,
         });
         setAddedToCart(true);
         setTimeout(() => setAddedToCart(false), 3000);
@@ -47,17 +74,17 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             <div>
                 <div className="relative aspect-square overflow-hidden bg-[var(--color-cream)] mb-4">
                     <Image
-                        src={product.images[selectedImage]}
-                        alt={`${product.name} - hình ${selectedImage + 1}`}
+                        src={aggregatedImages[selectedImage]}
+                        alt={`${title} - hình ${selectedImage + 1}`}
                         fill
                         className="object-cover transition-opacity duration-300"
                         sizes="(max-width: 1024px) 100vw, 50vw"
                         priority
                     />
                 </div>
-                {product.images.length > 1 && (
-                    <div className="grid grid-cols-3 gap-3">
-                        {product.images.map((src, i) => (
+                {aggregatedImages.length > 1 && (
+                    <div className="grid grid-cols-4 gap-3">
+                        {aggregatedImages.map((src, i) => (
                             <button
                                 key={i}
                                 onClick={() => setSelectedImage(i)}
@@ -73,88 +100,90 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
             {/* Product Info */}
             <div>
-                {product.badge && (
-                    <span className="inline-block bg-[var(--color-gold)] text-white text-xs font-medium tracking-widest uppercase px-3 py-1 mb-4">
-                        {product.badge}
-                    </span>
-                )}
+                <span className="inline-block uppercase tracking-widest text-[#B5915F] font-semibold text-xs mb-4">
+                    {product.category === 'inox' ? 'Inox' : product.category === 'nhom' ? 'Alu' : product.category}
+                </span>
 
                 <h1 className="font-serif text-3xl md:text-4xl text-[var(--color-brown)] mb-2">
-                    {product.name}
+                    {title}
                 </h1>
-                <p className="text-[var(--color-text-muted)] mb-6 leading-relaxed">{product.description}</p>
+                <p className="text-[var(--color-text-muted)] mb-6 leading-relaxed line-clamp-3">{desc}</p>
 
                 {/* Price */}
                 <div className="mb-8">
-                    <span className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">Giá</span>
+                    <span className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">
+                        {locale === 'en' ? 'Price' : 'Giá'}
+                    </span>
                     <div className="font-serif text-4xl text-[var(--color-brown)] mt-1">
-                        {price.toLocaleString('vi-VN')}đ
-                    </div>
-                    <span className="text-xs text-[var(--color-text-muted)]">Chưa bao gồm phí giao hàng</span>
-                </div>
-
-                {/* Material Selector */}
-                <div className="mb-6">
-                    <label className="label-small block mb-3">
-                        Chất Liệu: <span className="normal-case font-normal text-[var(--color-brown)]">{materialLabels[selectedMaterial]}</span>
-                    </label>
-                    <div className="flex flex-wrap gap-3">
-                        {availableMaterials.map((mat) => (
-                            <button
-                                key={mat}
-                                onClick={() => setSelectedMaterial(mat)}
-                                className={`px-5 py-2.5 text-sm border transition-all duration-200
-                  ${selectedMaterial === mat
-                                        ? 'border-[var(--color-brown)] bg-[var(--color-brown)] text-white'
-                                        : 'border-[var(--color-cream-dark)] text-[var(--color-text-muted)] hover:border-[var(--color-brown)]'
-                                    }`}
-                            >
-                                {materialLabels[mat]}
-                            </button>
-                        ))}
+                        {price.toLocaleString('vi-VN')}{locale === 'en' ? ' VND' : 'đ'}
                     </div>
                 </div>
 
                 {/* Size Selector */}
-                <div className="mb-6">
-                    <label className="label-small block mb-3">
-                        Kích Thước: <span className="normal-case font-normal text-[var(--color-brown)]">{sizeLabels[selectedSize]}</span>
-                    </label>
-                    <div className="flex flex-wrap gap-3">
-                        {availableSizes.map((size) => (
-                            <button
-                                key={size}
-                                onClick={() => setSelectedSize(size)}
-                                className={`px-5 py-2.5 text-sm border transition-all duration-200
-                  ${selectedSize === size
-                                        ? 'border-[var(--color-brown)] bg-[var(--color-brown)] text-white'
-                                        : 'border-[var(--color-cream-dark)] text-[var(--color-text-muted)] hover:border-[var(--color-brown)]'
-                                    }`}
-                            >
-                                {size}
-                            </button>
-                        ))}
+                {availableSizes.length > 0 && (
+                    <div className="mb-6">
+                        <label className="label-small block mb-3">
+                            {locale === 'en' ? 'Size' : 'Kích Thước'}: <span className="normal-case font-normal text-[var(--color-brown)]">{selectedSize}</span>
+                        </label>
+                        <div className="flex flex-wrap gap-3">
+                            {availableSizes.map((size) => (
+                                <button
+                                    key={size}
+                                    onClick={() => setSelectedSize(size)}
+                                    className={`px-5 py-2.5 text-sm border transition-all duration-200
+                      ${selectedSize === size
+                                            ? 'border-[var(--color-brown)] bg-[var(--color-brown)] text-white'
+                                            : 'border-[var(--color-cream-dark)] text-[var(--color-text-muted)] hover:border-[var(--color-brown)]'
+                                        }`}
+                                >
+                                    {size}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                </div>
+                )}
+
+                {/* Color Selector */}
+                {availableColors.length > 0 && (
+                    <div className="mb-6">
+                        <label className="label-small block mb-3">
+                            {locale === 'en' ? 'Color' : 'Màu sắc'}: <span className="normal-case font-normal uppercase text-[var(--color-brown)]">{selectedColor}</span>
+                        </label>
+                        <div className="flex flex-wrap gap-3">
+                            {availableColors.map((color) => (
+                                <button
+                                    key={color}
+                                    onClick={() => setSelectedColor(color)}
+                                    className={`px-5 py-2.5 text-sm border transition-all duration-200 capitalize
+                      ${selectedColor === color
+                                            ? 'border-[var(--color-brown)] bg-[var(--color-brown)] text-white'
+                                            : 'border-[var(--color-cream-dark)] text-[var(--color-text-muted)] hover:border-[var(--color-brown)]'
+                                        }`}
+                                >
+                                    {color}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Engraving Text */}
                 <div className="mb-8">
                     <label className="label-small block mb-3">
-                        Nội Dung Khắc Laser{' '}
-                        <span className="normal-case font-normal text-[var(--color-text-muted)] tracking-normal">(tùy chọn)</span>
+                        {locale === 'en' ? 'Engraving Text' : 'Nội Dung Khắc Laser'}{' '}
+                        <span className="normal-case font-normal text-[var(--color-text-muted)] tracking-normal">
+                            ({locale === 'en' ? 'optional' : 'tùy chọn'})
+                        </span>
                     </label>
                     <input
                         type="text"
                         value={engravingText}
                         onChange={(e) => setEngravingText(e.target.value)}
-                        placeholder="Nhập tên, logo, câu chuyện của bạn..."
+                        placeholder={locale === 'en' ? "Name, logo, your story..." : "Nhập tên, logo, câu chuyện của bạn..."}
                         maxLength={100}
                         className="w-full border border-[var(--color-cream-dark)] px-4 py-3 text-sm text-[var(--color-brown)]
               bg-white focus:outline-none focus:border-[var(--color-brown)] transition-colors"
                     />
-                    <p className="text-xs text-[var(--color-text-muted)] mt-1.5">
-                        {engravingText.length}/100 ký tự · File thiết kế (AI/PDF) có thể gửi qua email sau khi đặt hàng
-                    </p>
                 </div>
 
                 {/* Add to Cart */}
@@ -169,58 +198,14 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 >
                     {addedToCart ? (
                         <>
-                            <Check size={18} /> Đã Thêm Vào Giỏ
+                            <Check size={18} /> {locale === 'en' ? 'Added to Cart' : 'Đã Thêm Vào Giỏ'}
                         </>
                     ) : (
                         <>
-                            <ShoppingCart size={18} /> Thêm Vào Giỏ Hàng
+                            <ShoppingCart size={18} /> {locale === 'en' ? 'Add To Cart' : 'Thêm Vào Giỏ Hàng'}
                         </>
                     )}
                 </motion.button>
-
-                <p className="text-xs text-center text-[var(--color-text-muted)] mt-3">
-                    Giao hàng toàn quốc · Đổi trả trong 7 ngày
-                </p>
-
-                {/* Short Features */}
-                <div className="mt-8 pt-8 border-t border-[var(--color-cream-dark)]">
-                    <ul className="grid grid-cols-1 gap-2">
-                        {product.features.slice(0, 4).map((f) => (
-                            <li key={f} className="flex items-start gap-2.5 text-sm text-[var(--color-text-muted)]">
-                                <Check size={14} className="text-[var(--color-gold)] shrink-0 mt-0.5" />
-                                {f}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </div>
-
-            {/* FAQ Section – spans full width below */}
-            <div className="lg:col-span-2 mt-4">
-                <h2 className="font-serif text-2xl text-[var(--color-brown)] mb-6">Câu Hỏi Thường Gặp</h2>
-                <div className="space-y-2">
-                    {product.faq.map((item, i) => (
-                        <div key={i} className="border border-[var(--color-cream-dark)]">
-                            <button
-                                onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                                className="w-full flex items-center justify-between text-left px-6 py-4 text-[var(--color-brown)] hover:bg-[var(--color-cream)] transition-colors"
-                            >
-                                <span className="font-medium text-sm">{item.question}</span>
-                                {openFaq === i ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                            </button>
-                            {openFaq === i && (
-                                <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: 'auto', opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    className="px-6 pb-5 text-sm text-[var(--color-text-muted)] leading-relaxed"
-                                >
-                                    {item.answer}
-                                </motion.div>
-                            )}
-                        </div>
-                    ))}
-                </div>
             </div>
         </div>
     );

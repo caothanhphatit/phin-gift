@@ -83,8 +83,34 @@ export default async function BlogPostPage({ params }: Props) {
 
     const otherPosts = blogPosts.filter((p) => p.slug !== slug).slice(0, 3);
 
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: post.title,
+        image: [post.image],
+        datePublished: post.publishedAt,
+        author: {
+            '@type': 'Organization',
+            name: 'PhinGift',
+            url: 'https://phingift.vn',
+        },
+        publisher: {
+            '@type': 'Organization',
+            name: 'PhinGift',
+            logo: {
+                '@type': 'ImageObject',
+                url: 'https://phingift.vn/images/logo.png',
+            },
+        },
+        description: post.metaDescription,
+    };
+
     return (
         <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
             {/* Hero */}
             <section className="relative pt-32 pb-0 bg-[var(--color-brown-dark)]">
                 <div className="relative h-[50vh] overflow-hidden">
