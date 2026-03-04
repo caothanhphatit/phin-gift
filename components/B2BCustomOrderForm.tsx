@@ -62,7 +62,7 @@ export default function B2BCustomOrderForm() {
                 formData.append('logoFile', uploadedFile);
             }
 
-            const res = await fetch('/', {
+            const res = await fetch('/netlify-forms.html', {
                 method: 'POST',
                 body: formData
             });
@@ -133,17 +133,20 @@ export default function B2BCustomOrderForm() {
                     </div>
                 </motion.div>
 
-                {/* Netlify requires data-netlify="true" attribute, name="b2b-custom-order" and encType="multipart/form-data" for file uploads */}
+                {/* Netlify form: data-netlify="true" enables detection, honeypot field catches spam bots */}
                 <form
                     name="b2b-custom-order"
                     method="POST"
                     data-netlify="true"
+                    data-netlify-honeypot="bot-field"
                     encType="multipart/form-data"
                     onSubmit={handleSubmit(onSubmit)}
                     className="space-y-12 bg-white p-8 md:p-12 rounded-2xl shadow-xl border border-gray-100"
                 >
-                    {/* Hidden input needed by Netlify logic for static sites */}
+                    {/* form-name tells Netlify which form this AJAX submission belongs to */}
                     <input type="hidden" name="form-name" value="b2b-custom-order" />
+                    {/* Honeypot: hidden from users, bots will fill it in and get rejected */}
+                    <p className="hidden"><label>Skip this: <input name="bot-field" /></label></p>
 
                     {/* 3. Product Customization */}
                     <div className="space-y-8">

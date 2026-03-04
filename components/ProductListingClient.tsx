@@ -6,7 +6,8 @@ import { Link } from '@/i18n/routing';
 import AnimateSection from '@/components/AnimateSection';
 import ProductCard from '@/components/ProductCard';
 import { ProductSheet } from '@/lib/gsheets';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { useLocale, useTranslations } from 'next-intl';
 import { Filter, X } from 'lucide-react';
 
@@ -23,18 +24,6 @@ export default function ProductListingClient({ initialProducts }: Props) {
 
     // Filters
     const categoryFilter = searchParams.get('category');
-    const colorFilter = searchParams.get('color');
-
-    // Extract unique colors from variants
-    const availableColors = useMemo(() => {
-        const colors = new Set<string>();
-        initialProducts.forEach(p => {
-            p.variants.forEach(v => {
-                if (v.color) colors.add(v.color);
-            });
-        });
-        return Array.from(colors);
-    }, [initialProducts]);
 
     const updateFilter = (key: string, value: string | null) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -53,15 +42,9 @@ export default function ProductListingClient({ initialProducts }: Props) {
     const filteredProducts = useMemo(() => {
         return initialProducts.filter(product => {
             if (categoryFilter && product.category !== categoryFilter) return false;
-
-            if (colorFilter) {
-                const hasColor = product.variants.some(v => v.color === colorFilter);
-                if (!hasColor) return false;
-            }
-
             return true;
         });
-    }, [initialProducts, categoryFilter, colorFilter]);
+    }, [initialProducts, categoryFilter]);
 
     return (
         <>
@@ -129,31 +112,7 @@ export default function ProductListingClient({ initialProducts }: Props) {
                                 </div>
                             </div>
 
-                            {/* Colors */}
-                            {availableColors.length > 0 && (
-                                <div>
-                                    <h3 className="font-serif text-lg mb-4 text-[var(--color-brown)]">{t('colorTitle')}</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        <button
-                                            onClick={() => updateFilter('color', null)}
-                                            className={`px-3 py-1 text-xs border rounded-full ${!colorFilter ? 'bg-[var(--color-brown)] text-white' : 'bg-white text-gray-700'}`}
-                                        >
-                                            {t('allColors')}
-                                        </button>
-                                        {availableColors.map(color => (
-                                            <button
-                                                key={color}
-                                                onClick={() => updateFilter('color', color)}
-                                                className={`px-3 py-1 text-xs border rounded-full capitalize ${colorFilter === color ? 'bg-[var(--color-brown)] text-white' : 'bg-white text-gray-700'}`}
-                                            >
-                                                {color}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {(categoryFilter || colorFilter) && (
+                            {categoryFilter && (
                                 <button
                                     onClick={clearFilters}
                                     className="pt-4 text-sm text-[var(--color-gold)] flex items-center gap-1 hover:underline"

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Netlify Form Detection</title>
+</head>
+<body>
+  <!--
+    This file exists ONLY to let Netlify's build bot detect our forms.
+    Next.js renders forms via JavaScript, which the crawler cannot see.
+    This hidden page contains plain HTML replicas of all Netlify forms.
+    It is never shown to real users.
+  -->
+
+  <!-- B2B Custom Order Form -->
+  <form name="b2b-custom-order" netlify netlify-honeypot="bot-field" enctype="multipart/form-data" hidden>
+    <input type="hidden" name="form-name" value="b2b-custom-order" />
+    <input name="bot-field" />
+    <input type="text" name="companyName" />
+    <input type="text" name="contactPerson" />
+    <input type="email" name="email" />
+    <input type="tel" name="phone" />
+    <input type="radio" name="material" value="inox" />
+    <input type="radio" name="material" value="nhom" />
+    <input type="radio" name="size" value="150ml" />
+    <input type="radio" name="size" value="200ml" />
+    <input type="radio" name="size" value="500ml" />
+    <input type="radio" name="color" value="Silver" />
+    <input type="radio" name="color" value="Black" />
+    <input type="radio" name="color" value="Gold" />
+    <input type="radio" name="color" value="Red" />
+    <input type="radio" name="color" value="Blue" />
+    <input type="radio" name="designOption" value="upload" />
+    <input type="radio" name="designOption" value="describe" />
+    <input type="file" name="logoFile" />
+    <textarea name="logoDescription"></textarea>
+    <input type="number" name="quantity" />
+    <textarea name="notes"></textarea>
+    <button type="submit">Submit</button>
+  </form>
+
+</body>
+</html>
