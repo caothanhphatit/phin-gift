@@ -20,19 +20,19 @@ async function getProducts(page = 1, search = '') {
         return json;
     } catch (error) {
         console.error('Products fetch error:', error);
-        returnbaseUrl = process.env.VERCEL_URL 
-            ? `https://${process.env.VERCEL_URL}`
-            : process.env.NEXT_PUBLIC_SITE_URL 
-            ? process.env.NEXT_PUBLIC_SITE_URL
-            : 'http://localhost:3000';
-        
-        const res = await fetch(`${baseUrl}/api/admin/categories`
+        return { data: [], total: 0, totalPages: 1 };
     }
 }
 
 async function getCategories() {
     try {
-        const res = await fetch('/api/admin/categories', { cache: 'no-store' });
+        const baseUrl = process.env.VERCEL_URL 
+            ? `https://${process.env.VERCEL_URL}`
+            : process.env.NEXT_PUBLIC_SITE_URL 
+            ? process.env.NEXT_PUBLIC_SITE_URL
+            : 'http://localhost:3000';
+        
+        const res = await fetch(`${baseUrl}/api/admin/categories`, { cache: 'no-store' });
         const json = await res.json();
         return json.data || [];
     } catch {
