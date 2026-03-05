@@ -15,6 +15,15 @@ export const metadata: Metadata = {
     },
 };
 
+interface Post {
+    _id: string;
+    slug: string;
+    title?: { en?: string; vi?: string };
+    excerpt?: { en?: string; vi?: string };
+    featuredImageUrl?: string;
+    createdAt: string | Date;
+}
+
 async function getPosts() {
     try {
         await dbConnect();
@@ -48,29 +57,24 @@ export default async function BlogPage() {
             <section className="section-padding bg-[var(--color-cream)]">
                 <div className="container-custom">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {posts.map((post: any, i: number) => (
+                        {posts.map((post: Post, i: number) => (
                             <AnimateSection key={post._id} delay={i * 0.1}>
                                 <BlogCard post={{
                                     id: post._id,
                                     slug: post.slug,
-                                    title: post.title?.vi || post.title?.en,
-                                    excerpt: post.excerpt?.vi || post.excerpt?.en,
+                                    title: post.title?.vi || post.title?.en || '',
+                                    excerpt: post.excerpt?.vi || post.excerpt?.en || '',
                                     image: post.featuredImageUrl || '/images/hero/phin-coffee-pour.jpg',
                                     imageAlt: post.title?.vi || 'Blog Image',
                                     category: 'Kinh nghiệm', // Default category
                                     readingTime: 5, // Default reading time
-                                    publishedAt: post.createdAt,
-                                    tags: [],
-                                    relatedProducts: [],
-                                    metaTitle: '',
-                                    metaDescription: '',
-                                    content: []
+                                    publishedAt: new Date(post.createdAt).toISOString(),
                                 }} />
                             </AnimateSection>
                         ))}
                     </div>
                 </div>
             </section>
-        </>
+        </> 
     );
 }

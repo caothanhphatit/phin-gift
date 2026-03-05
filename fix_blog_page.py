@@ -1,3 +1,4 @@
+
 import os
 
 filepath = 'app/[locale]/blog/[slug]/page.tsx'
@@ -8,20 +9,25 @@ with open(filepath, 'r') as f:
 first_occurrence = -1
 second_occurrence = -1
 
-target_fragment = 'export default async function BlogPostPage'
+target_line = 'export default async function BlogPostPage({ params }: Props) {'
 
 for i, line in enumerate(lines):
-    if target_fragment in line:
+    if target_line in line:
         if first_occurrence == -1:
             first_occurrence = i
-            print(f"Found first occurrence at line {i + 1}")
         else:
             second_occurrence = i
-            print(f"Found second occurrence at line {i + 1}")
             break
 
 if second_occurrence != -1:
-    # Keep lines up to second_occurrence (exclusive)
+    print(f"Found second occurrence at line {second_occurrence + 1}")
+    # Keep lines up to second_occurrence (exclusive, but we might want to keep some empty lines before it? No, just cut it off)
+    # The second function starts at second_occurrence.
+    # We want to keep everything BEFORE second_occurrence.
+    
+    # Check if there's a blank line before it that we also want to remove?
+    # Line 109 is empty in the previous read.
+    
     new_lines = lines[:second_occurrence]
     
     # Write back

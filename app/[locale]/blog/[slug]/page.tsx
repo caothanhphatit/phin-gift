@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Clock, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Clock, ArrowLeft } from 'lucide-react';
 import AnimateSection from '@/components/AnimateSection';
 import dbConnect from '@/lib/mongodb';
 import BlogPost from '@/models/BlogPost';
@@ -11,7 +11,16 @@ interface Props {
     params: Promise<{ slug: string }>;
 }
 
-async function getPost(slug: string) {
+interface BlogPostType {
+    slug: string;
+    title: { en: string; vi: string };
+    excerpt: { en: string; vi: string };
+    content: { en: string; vi: string };
+    featuredImageUrl?: string;
+    createdAt: string;
+}
+
+async function getPost(slug: string): Promise<BlogPostType | null> {
     await dbConnect();
     const post = await BlogPost.findOne({ slug, status: 'Published' }).lean();
     if (!post) return null;
@@ -22,7 +31,7 @@ export async function generateStaticParams() {
     try {
         await dbConnect();
         const posts = await BlogPost.find({ status: 'Published' }, 'slug').lean();
-        return posts.map((p: any) => ({ slug: p.slug }));
+        return posts.map((p: { slug: string }) => ({ slug: p.slug }));
     } catch {
         return [];
     }
@@ -39,7 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         openGraph: {
             title: post.title?.vi || post.title?.en,
             description: post.excerpt?.vi || post.excerpt?.en,
-            images: [{ url: post.featuredImageUrl, alt: post.title?.vi }],
+            images: post.featuredImageUrl ? [{ url: post.featuredImageUrl, alt: post.title?.vi }] : [],
         },
     };
 }
