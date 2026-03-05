@@ -21,10 +21,15 @@ interface BlogPostType {
 }
 
 async function getPost(slug: string): Promise<BlogPostType | null> {
-    await dbConnect();
-    const post = await BlogPost.findOne({ slug, status: 'Published' }).lean();
-    if (!post) return null;
-    return JSON.parse(JSON.stringify(post));
+    try {
+        await dbConnect();
+        const post = await BlogPost.findOne({ slug, status: 'Published' }).lean();
+        if (!post) return null;
+        return JSON.parse(JSON.stringify(post));
+    } catch (error) {
+        console.error('Error fetching post:', error);
+        return null;
+    }
 }
 
 export async function generateStaticParams() {
@@ -38,24 +43,31 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { slug } = await params;
-    const post = await getPost(slug);
-    if (!post) return {};
-    
-    return {
-        title: post.title?.vi || post.title?.en,
-        description: post.excerpt?.vi || post.excerpt?.en,
-        openGraph: {
+    try {
+        const { slug } = await params;
+        const decodedSlug = decodeURIComponent(slug);
+        const post = await getPost(decodedSlug);
+        if (!post) return {};
+        
+        return {
             title: post.title?.vi || post.title?.en,
             description: post.excerpt?.vi || post.excerpt?.en,
-            images: post.featuredImageUrl ? [{ url: post.featuredImageUrl, alt: post.title?.vi }] : [],
-        },
-    };
+            openGraph: {
+                title: post.title?.vi || post.title?.en,
+                description: post.excerpt?.vi || post.excerpt?.en,
+                images: post.featuredImageUrl ? [{ url: post.featuredImageUrl, alt: post.title?.vi }] : [],
+            },
+        };
+    } catch (error) {
+        console.error('Error generating metadata:', error);
+        return {};
+    }
 }
 
 export default async function BlogPostPage({ params }: Props) {
     const { slug } = await params;
-    const post = await getPost(slug);
+    const decodedSlug = decodeURIComponent(slug);
+    const post = await getPost(decodedSlug);
 
     if (!post) notFound();
 
