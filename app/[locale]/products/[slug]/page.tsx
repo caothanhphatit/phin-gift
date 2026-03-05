@@ -42,14 +42,15 @@ export async function generateStaticParams() {
     } catch {
         return [];
     }
-} = await getProductBySlug(slug);
-    if (!product) notFound();
+}
 
-    const t = await getTranslations({ locale, namespace: 'nav' });
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { slug, locale } = await params;
+    const product = await getProductBySlug(slug);
+    if (!product) return {};
 
     const title = product.name?.[locale as 'vi' | 'en'] || product.name?.['vi'] || product.slug;
     const desc = product.shortDescription?.[locale as 'vi' | 'en'] || product.shortDescription?.['vi'] || '';
-    const firstImage = product.images?.[0]?.urlas 'vi' | 'en'] || product.shortDescription?.['vi'] || '';
     const firstImage = product.images?.[0]?.url || '/images/products/phin-collection.jpg';
 
     return {
@@ -65,16 +66,15 @@ export async function generateStaticParams() {
 
 export default async function ProductDetailPage({ params }: Props) {
     const { slug, locale } = await params;
-    const products = localProducts as any;
-    const product = products.find((p: any) => p.slug === slug);
+    const product = await getProductBySlug(slug);
     if (!product) notFound();
 
     const t = await getTranslations({ locale, namespace: 'nav' });
 
-    const title = product.title[locale as 'vi' | 'en'] || product.title['vi'];
-    const desc = product.description[locale as 'vi' | 'en'] || product.description['vi'];
-    const firstImage = product.variants?.[0]?.image || '';
-    const price = product.price || 0;
+    const title = product.name?.[locale as 'vi' | 'en'] || product.name?.['vi'] || product.slug;
+    const desc = product.shortDescription?.[locale as 'vi' | 'en'] || product.shortDescription?.['vi'] || '';
+    const firstImage = product.images?.[0]?.url || '/images/products/phin-collection.jpg';
+    const price = product.variants?.[0]?.price || 0;
 
     const jsonLd = {
         '@context': 'https://schema.org',
@@ -101,39 +101,7 @@ export default async function ProductDetailPage({ params }: Props) {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            {/* Header */}
-            <div className="pt-20 pb-6 bg-[var(--color-cream)]">
-                <div className="container-custom px-4 md:px-8 lg:px-16">
-                    <nav className="flex items-center gap-2 text-sm text-[var(--color-text-muted)] mb-6 mt-4">
-                        <Link href="/" className="hover:text-[var(--color-gold)] transition-colors">{t('home')}</Link>
-                        <span>/</span>
-                        <Link href="/products" className="hover:text-[var(--color-gold)] transition-colors">{t('products')}</Link>
-                        <span>/</span>
-                        <span className="text-[var(--color-brown)]">{title}</span>
-                    </nav>
-                </div>
-            </div>
-
-            {/* Main product content */}
-            <section className="section-padding bg-[var(--color-cream)] !pt-0">
-                <div className="container-custom">
-                    <AnimateSection>
-                        <ProductDetailClient product={product} />
-                    </AnimateSection>
-
-                    {/* Description Addendum */}
-                    <div className="mt-16 pt-16 border-t border-[var(--color-cream-dark)]">
-                        <AnimateSection delay={0.1}>
-                            <h2 className="font-serif text-2xl text-[var(--color-brown)] mb-4">
-                                {locale === 'en' ? 'Product Description' : 'Mô Tả Sản Phẩm'}
-                            </h2>
-                            <p className="text-[var(--color-text-muted)] leading-relaxed whitespace-pre-line">
-                                {desc}
-                            </p>
-                        </AnimateSection>
-                    </div>
-                </div>
-            </section>
+            <ProductDetailClient product={product} />
         </>
     );
 }
