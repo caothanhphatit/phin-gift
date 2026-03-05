@@ -1,5 +1,7 @@
 import { Search } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 const statusStyles: Record<string, string> = {
     Pending: 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20',
     Processing: 'bg-blue-500/10 text-blue-400 border border-blue-500/20',

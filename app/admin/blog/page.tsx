@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 async function getBlogPosts() {
     try {
         const res = await fetch('/api/admin/blog', { cache: 'no-store' });

@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import ProductImage from '@/components/admin/ProductImage';
 
+export const dynamic = 'force-dynamic';
+
 async function getProducts(page = 1, search = '') {
     try {
         const url = `/api/admin/products?page=${page}&limit=10${search ? `&search=${search}` : ''}`;

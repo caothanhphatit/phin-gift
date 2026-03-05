@@ -1,5 +1,7 @@
 import { PhoneCall, Eye } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 async function getB2BOrders() {
     try {
         const res = await fetch('/api/admin/b2b-orders', { cache: 'no-store' });
