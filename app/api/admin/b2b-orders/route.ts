@@ -10,8 +10,9 @@ export async function GET(request: Request) {
         const query = status && status !== 'All' ? { status } : {};
         const b2bOrders = await B2BOrder.find(query).sort({ createdAt: -1 }).lean();
         return NextResponse.json({ success: true, data: b2bOrders });
-    } catch (error) {
-        return NextResponse.json({ success: false, error: 'Failed to fetch B2B orders' }, { status: 500 });
+    } catch (error: any) {
+        console.error('B2B Orders API error:', error);
+        return NextResponse.json({ success: false, error: error.message || 'Failed to fetch B2B orders' }, { status: 500 });
     }
 }
 

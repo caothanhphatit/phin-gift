@@ -7,8 +7,9 @@ export async function GET() {
         await dbConnect();
         const posts = await BlogPost.find({}).sort({ createdAt: -1 }).lean();
         return NextResponse.json({ success: true, data: posts });
-    } catch (error) {
-        return NextResponse.json({ success: false, error: 'Failed to fetch blog posts' }, { status: 500 });
+    } catch (error: any) {
+        console.error('Blog API error:', error);
+        return NextResponse.json({ success: false, error: error.message || 'Failed to fetch blog posts' }, { status: 500 });
     }
 }
 

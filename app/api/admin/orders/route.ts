@@ -19,7 +19,8 @@ export async function GET(request: Request) {
             .lean();
 
         return NextResponse.json({ success: true, data: orders, total, page, totalPages: Math.ceil(total / limit) });
-    } catch (error) {
-        return NextResponse.json({ success: false, error: 'Failed to fetch orders' }, { status: 500 });
+    } catch (error: any) {
+        console.error('Orders API error:', error);
+        return NextResponse.json({ success: false, error: error.message || 'Failed to fetch orders' }, { status: 500 });
     }
 }

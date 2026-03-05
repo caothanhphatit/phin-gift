@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import Category from './Category';
 
 export interface IProductVariant {
     _id?: string;

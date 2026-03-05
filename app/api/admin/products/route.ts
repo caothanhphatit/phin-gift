@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
+import Category from '@/models/Category';
 
 export async function GET(request: Request) {
     try {
@@ -16,15 +17,15 @@ export async function GET(request: Request) {
 
         const total = await Product.countDocuments(query);
         const products = await Product.find(query)
-            .populate('categories', 'name')
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
             .lean();
 
         return NextResponse.json({ success: true, data: products, total, page, totalPages: Math.ceil(total / limit) });
-    } catch (error) {
-        return NextResponse.json({ success: false, error: 'Failed to fetch products' }, { status: 500 });
+    } catch (error: any) {
+        console.error('Products API error:', error);
+        return NextResponse.json({ success: false, error: error.message || 'Failed to fetch products' }, { status: 500 });
     }
 }
 
