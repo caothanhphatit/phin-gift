@@ -15,7 +15,7 @@ const statusTabs = ['All', 'Pending', 'Processing', 'Shipped', 'Completed', 'Can
 
 async function getOrders() {
     try {
-        const baseUrl = getBaseUrl();
+        const baseUrl = await getBaseUrl();
         const res = await fetch(`${baseUrl}/api/admin/orders?limit=20`, { cache: 'no-store' });
         const json = await res.json();
         return json.data || [];

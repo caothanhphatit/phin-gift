@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 async function getB2BOrders() {
     try {
-        const baseUrl = getBaseUrl();
+        const baseUrl = await getBaseUrl();
         const res = await fetch(`${baseUrl}/api/admin/b2b-orders`, { cache: 'no-store' });
         const json = await res.json();
         return json.data || [];

@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 async function getBlogPosts() {
     try {
-        const baseUrl = getBaseUrl();
+        const baseUrl = await getBaseUrl();
         const res = await fetch(`${baseUrl}/api/admin/blog`, { cache: 'no-store' });
         const json = await res.json();
         return json.data || [];

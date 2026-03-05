@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 async function getProducts() {
     try {
-        const baseUrl = getBaseUrl();
+        const baseUrl = await getBaseUrl();
         
         const res = await fetch(`${baseUrl}/api/admin/products?limit=100`, { cache: 'no-store' });
         const json = await res.json();

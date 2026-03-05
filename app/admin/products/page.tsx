@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 async function getProducts(page = 1, search = '') {
     try {
-        const baseUrl = getBaseUrl();
+        const baseUrl = await getBaseUrl();
         
         const url = `${baseUrl}/api/admin/products?page=${page}&limit=10${search ? `&search=${search}` : ''}`;
         console.log('Fetching products from:', url);
@@ -23,7 +23,7 @@ async function getProducts(page = 1, search = '') {
 
 async function getCategories() {
     try {
-        const baseUrl = getBaseUrl();
+        const baseUrl = await getBaseUrl();
         
         const res = await fetch(`${baseUrl}/api/admin/categories`, { cache: 'no-store' });
         const json = await res.json();
