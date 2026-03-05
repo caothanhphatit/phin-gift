@@ -14,9 +14,9 @@ interface Product {
         en: string;
         vi: string;
     };
-    shortDescription: {
-        en: string;
-        vi: string;
+    shortDescription?: {
+        en?: string;
+        vi?: string;
     };
     images: Array<{ url: string; publicId: string; isMain: boolean }>;
     variants: Array<{ sku: string; size?: string; color?: string; price: number; salePrice?: number; stock: number }>;
@@ -29,7 +29,7 @@ interface ProductDetailClientProps {
 export default function ProductDetailClient({ product }: ProductDetailClientProps) {
     const locale = useLocale() as 'vi' | 'en';
     const title = product.name[locale] || product.name['vi'];
-    const desc = product.shortDescription[locale] || product.shortDescription['vi'];
+    const desc = product.shortDescription?.[locale] || product.shortDescription?.['vi'] || '';
 
     // Fallbacks to generic images if variant missing
     const defaultImage = '/images/products/phin-collection.jpg';

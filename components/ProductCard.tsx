@@ -14,9 +14,9 @@ interface Product {
         en: string;
         vi: string;
     };
-    shortDescription: {
-        en: string;
-        vi: string;
+    shortDescription?: {
+        en?: string;
+        vi?: string;
     };
     images: Array<{ url: string; publicId: string; isMain: boolean }>;
     variants: Array<{ sku: string; size?: string; color?: string; price: number; salePrice?: number; stock: number }>;
@@ -32,8 +32,8 @@ export default function ProductCard({ product }: ProductCardProps) {
 
     const firstVariant = product.variants?.[0];
     const displayImage = product.images?.[0]?.url || '/images/products/phin-collection.jpg';
-    const displayTitle = product.name[locale] || product.name['vi'];
-    const displayDescription = product.shortDescription[locale] || product.shortDescription['vi'];
+    const displayTitle = product.name?.[locale] || product.name?.['vi'] || 'Product';
+    const displayDescription = product.shortDescription?.[locale] || product.shortDescription?.['vi'] || '';
     const displayPrice = firstVariant?.price || 0;
 
     const handleQuickAdd = (e: React.MouseEvent) => {
@@ -85,7 +85,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 {/* Content */}
                 <div className="p-5">
                     <p className="label-small mb-1.5 uppercase tracking-widest text-[#B5915F] font-semibold text-xs">
-                        {product.category === 'inox' ? 'Inox' : product.category === 'nhom' ? 'Alu' : 'Custom'}
+                        {product.slug.includes('inox') ? 'Inox' : product.slug.includes('nhom') ? 'Alu' : 'Phin'}
                     </p>
                     <h3 className="font-serif text-lg text-[var(--color-brown)] mb-1 leading-snug">
                         {displayTitle}

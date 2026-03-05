@@ -17,9 +17,9 @@ interface Product {
         en: string;
         vi: string;
     };
-    shortDescription: {
-        en: string;
-        vi: string;
+    shortDescription?: {
+        en?: string;
+        vi?: string;
     };
     images: Array<{ url: string; publicId: string; isMain: boolean }>;
     variants: Array<{ sku: string; size?: string; color?: string; price: number; salePrice?: number; stock: number }>;
