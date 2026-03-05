@@ -1,14 +1,107 @@
-import Link from 'next/link';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+'use client';
 
-const categories = [
-    { id: 1, name_vi: 'Phin Inox', name_en: 'Stainless Steel', slug: 'phin-inox', products: 14, status: 'Active' },
-    { id: 2, name_vi: 'Phin Nhôm', name_en: 'Aluminum', slug: 'phin-nhom', products: 9, status: 'Active' },
-    { id: 3, name_vi: 'Bộ Quà Tặng', name_en: 'Gift Sets', slug: 'bo-qua-tang', products: 5, status: 'Active' },
-    { id: 4, name_vi: 'Phụ Kiện', name_en: 'Accessories', slug: 'phu-kien', products: 8, status: 'Active' },
-];
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Plus, Edit2, Trash2, X } from 'lucide-react';
+// import { useLocale } from 'next-intl'; // Removed
+
+interface Category {
+    _id: string;
+    name: { en: string; vi: string };
+    slug: string;
+    description: { en: string; vi: string };
+    isActive: boolean;
+}
 
 export default function CategoriesPage() {
+    // const locale = useLocale(); // Removed
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [formData, setFormData] = useState({
+        name: { en: '', vi: '' },
+        slug: '',
+        description: { en: '', vi: '' },
+        isActive: true,
+    });
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const fetchCategories = async () => {
+        try {
+            const res = await fetch('/api/admin/categories');
+            const data = await res.json();
+            if (data.success) {
+                setCategories(data.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch categories:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const url = isEditing ? `/api/admin/categories/${editingId}` : '/api/admin/categories';
+            const method = isEditing ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                fetchCategories();
+                resetForm();
+            } else {
+                alert(data.error || 'Operation failed');
+            }
+        } catch (error) {
+            console.error('Submit error:', error);
+        }
+    };
+
+    const handleEdit = (category: Category) => {
+        setEditingId(category._id);
+        setFormData({
+            name: { ...category.name },
+            slug: category.slug,
+            description: { ...category.description },
+            isActive: category.isActive,
+        });
+        setIsEditing(true);
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this category?')) return;
+        try {
+            const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                fetchCategories();
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+        }
+    };
+
+    const resetForm = () => {
+        setIsEditing(false);
+        setEditingId(null);
+        setFormData({
+            name: { en: '', vi: '' },
+            slug: '',
+            description: { en: '', vi: '' },
+            isActive: true,
+        });
+    };
+
     return (
         <div className="space-y-6 max-w-3xl">
             <div className="flex items-center justify-between">
@@ -16,62 +109,122 @@ export default function CategoriesPage() {
                     <h1 className="text-2xl font-semibold text-white">Categories</h1>
                     <p className="text-gray-400 text-sm mt-1">Manage product categories</p>
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2.5 bg-[#C9A84C] hover:bg-[#b8973b] text-black rounded-lg text-sm font-semibold transition-colors">
-                    <Plus size={16} />
-                    Add Category
-                </button>
             </div>
 
-            {/* Add Form */}
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-                <h2 className="text-sm font-semibold text-white mb-4">New Category</h2>
-                <div className="grid grid-cols-3 gap-4">
-                    <div>
-                        <label className="block text-xs text-gray-400 mb-1.5">Name (Vietnamese)</label>
-                        <input type="text" placeholder="Tên danh mục..." className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-[#C9A84C]/50 transition-colors" />
-                    </div>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-sm font-semibold text-white">{isEditing ? 'Edit Category' : 'New Category'}</h2>
+                    {isEditing && (
+                        <button type="button" onClick={resetForm} className="text-xs text-gray-400 hover:text-white flex items-center gap-1">
+                            <X size={14} /> Cancel
+                        </button>
+                    )}
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label className="block text-xs text-gray-400 mb-1.5">Name (English)</label>
-                        <input type="text" placeholder="Category name..." className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-[#C9A84C]/50 transition-colors" />
+                        <input
+                            type="text"
+                            value={formData.name.en}
+                            onChange={(e) => setFormData({ ...formData, name: { ...formData.name, en: e.target.value } })}
+                            required
+                            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-[#C9A84C]/50 transition-colors"
+                        />
                     </div>
                     <div>
+                        <label className="block text-xs text-gray-400 mb-1.5">Name (Vietnamese)</label>
+                        <input
+                            type="text"
+                            value={formData.name.vi}
+                            onChange={(e) => setFormData({ ...formData, name: { ...formData.name, vi: e.target.value } })}
+                            required
+                            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-[#C9A84C]/50 transition-colors"
+                        />
+                    </div>
+                    <div className="md:col-span-2">
                         <label className="block text-xs text-gray-400 mb-1.5">Slug</label>
-                        <input type="text" placeholder="category-slug" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-[#C9A84C]/50 transition-colors font-mono" />
+                        <input
+                            type="text"
+                            value={formData.slug}
+                            onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                            required
+                            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-[#C9A84C]/50 transition-colors font-mono"
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                         <label className="block text-xs text-gray-400 mb-1.5">Description (Optional)</label>
+                         <div className="grid grid-cols-2 gap-4">
+                            <input
+                                type="text"
+                                placeholder="English"
+                                value={formData.description.en}
+                                onChange={(e) => setFormData({ ...formData, description: { ...formData.description, en: e.target.value } })}
+                                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-[#C9A84C]/50 transition-colors"
+                            />
+                            <input
+                                type="text"
+                                placeholder="Vietnamese"
+                                value={formData.description.vi}
+                                onChange={(e) => setFormData({ ...formData, description: { ...formData.description, vi: e.target.value } })}
+                                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-[#C9A84C]/50 transition-colors"
+                            />
+                         </div>
                     </div>
                 </div>
-                <div className="flex justify-end mt-4">
-                    <button className="px-4 py-2 bg-[#C9A84C] hover:bg-[#b8973b] text-black rounded-lg text-sm font-semibold transition-colors">
-                        Save Category
+                
+                <div className="flex justify-end">
+                    <button type="submit" className="px-4 py-2 bg-[#C9A84C] hover:bg-[#b8973b] text-black rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
+                        {isEditing ? <Edit2 size={16} /> : <Plus size={16} />}
+                        {isEditing ? 'Update Category' : 'Create Category'}
                     </button>
                 </div>
-            </div>
+            </form>
 
             {/* List */}
             <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl overflow-hidden">
                 <table className="w-full">
                     <thead>
                         <tr className="border-b border-white/[0.06]">
-                            {['Category', 'Slug', 'Products', 'Status', 'Actions'].map((h) => (
-                                <th key={h} className="text-left text-xs text-gray-500 font-medium px-6 py-3">{h}</th>
-                            ))}
+                            <th className="text-left text-xs text-gray-500 font-medium px-6 py-3">Name</th>
+                            <th className="text-left text-xs text-gray-500 font-medium px-6 py-3">Slug</th>
+                            <th className="text-left text-xs text-gray-500 font-medium px-6 py-3">Description</th>
+                            <th className="text-left text-xs text-gray-500 font-medium px-6 py-3">Status</th>
+                            <th className="text-left text-xs text-gray-500 font-medium px-6 py-3">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {categories.map((cat) => (
-                            <tr key={cat.id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                        {categories.map((category) => (
+                            <tr key={category._id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
                                 <td className="px-6 py-4">
-                                    <p className="text-sm text-white font-medium">{cat.name_vi}</p>
-                                    <p className="text-xs text-gray-500">{cat.name_en}</p>
+                                    <p className="text-sm text-white font-medium">{category.name.vi}</p>
+                                    <p className="text-xs text-gray-500">{category.name.en}</p>
                                 </td>
-                                <td className="px-6 py-4 text-sm text-gray-400 font-mono">{cat.slug}</td>
-                                <td className="px-6 py-4 text-sm text-gray-300">{cat.products} products</td>
+                                <td className="px-6 py-4 text-sm text-gray-400 font-mono">{category.slug}</td>
+                                <td className="px-6 py-4 text-sm text-gray-400">
+                                    <p>{category.description?.vi}</p>
+                                    <p className="text-xs">{category.description?.en}</p>
+                                </td>
                                 <td className="px-6 py-4">
-                                    <span className="text-xs px-2.5 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">{cat.status}</span>
+                                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${category.isActive ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                                        {category.isActive ? 'Active' : 'Inactive'}
+                                    </span>
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-2">
-                                        <button className="p-1.5 text-gray-500 hover:text-white hover:bg-white/[0.06] rounded-md transition-colors"><Edit2 size={14} /></button>
-                                        <button className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/[0.06] rounded-md transition-colors"><Trash2 size={14} /></button>
+                                        <button 
+                                            onClick={() => handleEdit(category)}
+                                            className="p-1.5 text-gray-500 hover:text-white hover:bg-white/[0.06] rounded-md transition-colors"
+                                        >
+                                            <Edit2 size={14} />
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDelete(category._id)}
+                                            className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/[0.06] rounded-md transition-colors"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
                                     </div>
                                 </td>
                             </tr>

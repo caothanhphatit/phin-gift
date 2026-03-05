@@ -23,6 +23,7 @@ interface Product {
     };
     images: Array<{ url: string; publicId: string; isMain: boolean }>;
     variants: Array<{ sku: string; size?: string; color?: string; price: number; salePrice?: number; stock: number }>;
+    categories?: string[];
 }
 
 interface Props {
@@ -40,13 +41,11 @@ export default function ProductListingClient({ initialProducts }: Props) {
     const categoryFilter = searchParams.get('category');
 
     const updateFilter = (key: string, value: string | null) => {
-        const params = new URLSearchParams(searchParams.toString());
         if (value) {
-            params.set(key, value);
+            router.push(`?${key}=${value}`, { scroll: false });
         } else {
-            params.delete(key);
+            router.push('/products', { scroll: false });
         }
-        router.push(`/products?${params.toString()}`, { scroll: false });
     };
 
     const clearFilters = () => {
@@ -54,8 +53,14 @@ export default function ProductListingClient({ initialProducts }: Props) {
     };
 
     const filteredProducts = useMemo(() => {
-        return initialProducts;
-    }, [initialProducts]);
+        let products = initialProducts;
+
+        if (categoryFilter) {
+            products = products.filter((p) => p.categories?.includes(categoryFilter));
+        }
+
+        return products;
+    }, [initialProducts, categoryFilter]);
 
     return (
         <>

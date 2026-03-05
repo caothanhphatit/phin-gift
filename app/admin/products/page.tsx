@@ -1,51 +1,80 @@
+'use client';
+
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Loader2 } from 'lucide-react';
 import ProductImage from '@/components/admin/ProductImage';
-import { getBaseUrl } from '@/lib/utils';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-export const dynamic = 'force-dynamic';
-
-async function getProducts(page = 1, search = '') {
-    try {
-        const baseUrl = await getBaseUrl();
-        
-        const url = `${baseUrl}/api/admin/products?page=${page}&limit=10${search ? `&search=${search}` : ''}`;
-        console.log('Fetching products from:', url);
-        const res = await fetch(url, { cache: 'no-store' });
-        const json = await res.json();
-        console.log('Products response:', json);
-        return json;
-    } catch (error) {
-        console.error('Products fetch error:', error);
-        return { data: [], total: 0, totalPages: 1 };
-    }
+interface Product {
+    _id: string;
+    name: { en: string; vi: string };
+    slug: string;
+    basePrice: number;
+    salePrice?: number;
+    variants: any[];
+    categories: any[];
+    images: any[];
+    isActive: boolean;
+    stock: number;
 }
 
-async function getCategories() {
-    try {
-        const baseUrl = await getBaseUrl();
-        
-        const res = await fetch(`${baseUrl}/api/admin/categories`, { cache: 'no-store' });
-        const json = await res.json();
-        return json.data || [];
-    } catch {
-        return [];
-    }
-}
+function ProductsList() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [total, setTotal] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
 
-function formatVND(price: number) {
-    return `₫${price.toLocaleString('vi-VN')}`;
-}
+    useEffect(() => {
+        const p = parseInt(searchParams.get('page') || '1');
+        setPage(p);
+        fetchProducts(p);
+    }, [searchParams]);
 
-export default async function ProductsPage() {
-    const [{ data: products = [], total = 0, totalPages = 1 }, categories] = await Promise.all([
-        getProducts(),
-        getCategories(),
-    ]);
+    const fetchProducts = async (currentPage: number) => {
+        setLoading(true);
+        try {
+            const query = new URLSearchParams(searchParams.toString());
+            query.set('page', currentPage.toString());
+            query.set('limit', '10');
+            const res = await fetch(`/api/admin/products?${query.toString()}`);
+            const data = await res.json();
+            if (data.success) {
+                setProducts(data.data);
+                setTotalPages(data.totalPages);
+                setTotal(data.total);
+            }
+        } catch (error) {
+            console.error('Failed to fetch products:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    // Build category map
-    const catMap: Record<string, string> = {};
-    categories.forEach((c: any) => { catMap[c._id] = c.name?.vi || c.name?.en || '-'; });
+    const handleDelete = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this product?')) return;
+        try {
+            const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                fetchProducts(page);
+            } else {
+                alert('Failed to delete product');
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+        }
+    };
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        router.push(`/admin/products?search=${searchTerm}`);
+    };
+
+    const formatVND = (price: number) => `₫${price.toLocaleString('vi-VN')}`;
 
     return (
         <div className="space-y-6">
@@ -61,9 +90,27 @@ export default async function ProductsPage() {
                 </Link>
             </div>
 
+            {/* Filters */}
+            <div className="flex gap-4">
+                <form onSubmit={handleSearch} className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                    <input 
+                        type="text" 
+                        placeholder="Search products..." 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 outline-none focus:border-[#C9A84C]/50 transition-colors"
+                    />
+                </form>
+            </div>
+
             {/* Table */}
             <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl overflow-hidden">
-                {products.length === 0 ? (
+                {loading ? (
+                    <div className="flex justify-center items-center py-20">
+                        <Loader2 className="animate-spin text-[#C9A84C]" size={32} />
+                    </div>
+                ) : products.length === 0 ? (
                     <div className="px-6 py-16 text-center text-gray-500 text-sm">No products found. Add your first product!</div>
                 ) : (
                     <table className="w-full">
@@ -75,10 +122,10 @@ export default async function ProductsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {products.map((p: any) => {
+                            {products.map((p) => {
                                 const firstVariant = p.variants?.[0];
                                 const totalStock = p.variants?.reduce((sum: number, v: any) => sum + (v.stock || 0), 0) ?? 0;
-                                const catNames = p.categories?.map((c: any) => (typeof c === 'object' ? c.name?.vi : catMap[c])).filter(Boolean).join(', ') || '-';
+                                const catNames = p.categories?.map((c: any) => (typeof c === 'object' ? (c.name?.vi || c.name?.en) : c)).filter(Boolean).join(', ') || '-';
                                 return (
                                     <tr key={p._id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
                                         <td className="px-6 py-4">
@@ -108,7 +155,10 @@ export default async function ProductsPage() {
                                                 <Link href={`/admin/products/${p._id}`} className="p-1.5 text-gray-500 hover:text-white hover:bg-white/[0.06] rounded-md transition-colors">
                                                     <Edit2 size={14} />
                                                 </Link>
-                                                <button className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/[0.06] rounded-md transition-colors">
+                                                <button 
+                                                    onClick={() => handleDelete(p._id)}
+                                                    className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/[0.06] rounded-md transition-colors"
+                                                >
                                                     <Trash2 size={14} />
                                                 </button>
                                             </div>
@@ -119,17 +169,36 @@ export default async function ProductsPage() {
                         </tbody>
                     </table>
                 )}
-
-                {/* Pagination */}
-                <div className="px-6 py-4 border-t border-white/[0.06] flex items-center justify-between">
-                    <p className="text-xs text-gray-500">Showing {products.length} of {total} products</p>
-                    <div className="flex gap-2">
-                        <button className="px-3 py-1.5 text-xs text-gray-400 bg-white/[0.04] border border-white/[0.08] rounded-md hover:text-white transition-colors">Previous</button>
-                        <button className="px-3 py-1.5 text-xs text-white bg-[#C9A84C]/20 border border-[#C9A84C]/30 rounded-md">1</button>
-                        {totalPages > 1 && <button className="px-3 py-1.5 text-xs text-gray-400 bg-white/[0.04] border border-white/[0.08] rounded-md hover:text-white transition-colors">Next</button>}
-                    </div>
-                </div>
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex justify-center gap-2">
+                    <button 
+                        onClick={() => router.push(`/admin/products?page=${Math.max(1, page - 1)}`)}
+                        disabled={page === 1}
+                        className="px-3 py-1 bg-white/[0.03] text-sm text-gray-400 rounded disabled:opacity-50"
+                    >
+                        Previous
+                    </button>
+                    <span className="px-3 py-1 text-sm text-white">Page {page} of {totalPages}</span>
+                    <button 
+                        onClick={() => router.push(`/admin/products?page=${Math.min(totalPages, page + 1)}`)}
+                        disabled={page === totalPages}
+                        className="px-3 py-1 bg-white/[0.03] text-sm text-gray-400 rounded disabled:opacity-50"
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
         </div>
+    );
+}
+
+export default function ProductsPage() {
+    return (
+        <Suspense fallback={<div className="text-white">Loading...</div>}>
+            <ProductsList />
+        </Suspense>
     );
 }

@@ -17,6 +17,23 @@ export default function Navbar() {
     const locale = useLocale();
     const t = useTranslations('nav');
 
+    const [categories, setCategories] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch('/api/admin/categories');
+                const data = await res.json();
+                if (data.success) {
+                    setCategories(data.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch categories for nav:', error);
+            }
+        };
+        fetchCategories();
+    }, []);
+
     const isHomePage = pathname === '/';
 
     const navLinks = [
@@ -24,11 +41,16 @@ export default function Navbar() {
         {
             label: t('products'),
             href: '/products',
-            dropdown: [
-                { label: t('inox_filter'), href: '/products?category=inox' },
-                { label: t('aluminum_filter'), href: '/products?category=nhom' },
-                { label: t('custom_logo'), href: '/products/phin-ca-phe-khac-logo' },
-            ],
+            dropdown: categories.length > 0 
+                ? categories.map(c => ({
+                    label: c.name[locale as keyof typeof c.name] || c.name.en,
+                    href: `/products?category=${c._id}`
+                }))
+                : [
+                    { label: t('inox_filter'), href: '/products?category=inox' },
+                    { label: t('aluminum_filter'), href: '/products?category=nhom' },
+                    { label: t('custom_logo'), href: '/products/phin-ca-phe-khac-logo' },
+                ],
         },
         { label: t('blog'), href: '/blog' },
         { label: t('about'), href: '/about' },
