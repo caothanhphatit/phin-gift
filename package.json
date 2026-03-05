@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
+    "cloudinary": "^2.9.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.34.5",
     "lucide-react": "^0.576.0",
+    "mongoose": "^9.2.4",
     "next": "16.1.6",
     "next-intl": "^4.8.3",
     "react": "19.2.3",
@@ -25,8 +27,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.3.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "pdf-parse": "^2.4.5",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
