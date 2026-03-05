@@ -5,10 +5,13 @@ import ProductImage from '@/components/admin/ProductImage';
 async function getProducts(page = 1, search = '') {
     try {
         const url = `/api/admin/products?page=${page}&limit=10${search ? `&search=${search}` : ''}`;
+        console.log('Fetching products from:', url);
         const res = await fetch(url, { cache: 'no-store' });
         const json = await res.json();
+        console.log('Products response:', json);
         return json;
-    } catch {
+    } catch (error) {
+        console.error('Products fetch error:', error);
         return { data: [], total: 0, totalPages: 1 };
     }
 }
