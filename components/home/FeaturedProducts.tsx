@@ -1,7 +1,7 @@
 import { Link } from '@/i18n/routing';
 import { ArrowRight } from 'lucide-react';
 import AnimateSection from '@/components/AnimateSection';
-import ProductCard from '@/components/ProductCard';
+import ProductCard, { Product } from '@/components/ProductCard';
 import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
@@ -45,8 +45,8 @@ export default async function FeaturedProducts() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {featuredProducts.map((product, i) => (
-                        <AnimateSection key={product.id} delay={i * 0.1}>
+                    {featuredProducts.map((product: Product, i: number) => (
+                        <AnimateSection key={product._id.toString()} delay={i * 0.1}>
                             <ProductCard product={product} />
                         </AnimateSection>
                     ))}

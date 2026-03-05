@@ -141,7 +141,7 @@ export default function ProductListingClient({ initialProducts }: Props) {
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {filteredProducts.map((product, i) => (
-                                        <AnimateSection key={product.id} delay={i * 0.1}>
+                                        <AnimateSection key={product._id} delay={i * 0.1}>
                                             <ProductCard product={product} />
                                         </AnimateSection>
                                     ))}

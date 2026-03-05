@@ -22,6 +22,8 @@ interface Product {
     variants: Array<{ sku: string; size?: string; color?: string; price: number; salePrice?: number; stock: number }>;
 }
 
+export type { Product };
+
 interface ProductCardProps {
     product: Product;
 }
