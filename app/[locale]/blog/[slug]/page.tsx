@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import { Clock, ArrowLeft } from 'lucide-react';
 import AnimateSection from '@/components/AnimateSection';
 import dbConnect from '@/lib/mongodb';
