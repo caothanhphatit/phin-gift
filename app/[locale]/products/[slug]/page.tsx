@@ -4,6 +4,7 @@ import { Link } from '@/i18n/routing';
 import AnimateSection from '@/components/AnimateSection';
 import ProductDetailClient from '@/components/ProductDetailClient';
 import { getTranslations } from 'next-intl/server';
+import { getBaseUrl } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,11 +14,7 @@ interface Props {
 
 async function getProductBySlug(slug: string) {
     try {
-        const baseUrl = process.env.VERCEL_URL 
-            ? `https://${process.env.VERCEL_URL}`
-            : process.env.NEXT_PUBLIC_SITE_URL 
-            ? process.env.NEXT_PUBLIC_SITE_URL
-            : 'http://localhost:3000';
+        const baseUrl = getBaseUrl();
         
         const res = await fetch(`${baseUrl}/api/admin/products?limit=100`, { cache: 'no-store' });
         const json = await res.json();

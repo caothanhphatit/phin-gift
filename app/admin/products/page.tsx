@@ -1,16 +1,13 @@
 import Link from 'next/link';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import ProductImage from '@/components/admin/ProductImage';
+import { getBaseUrl } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
 async function getProducts(page = 1, search = '') {
     try {
-        const baseUrl = process.env.VERCEL_URL 
-            ? `https://${process.env.VERCEL_URL}`
-            : process.env.NEXT_PUBLIC_SITE_URL 
-            ? process.env.NEXT_PUBLIC_SITE_URL
-            : 'http://localhost:3000';
+        const baseUrl = getBaseUrl();
         
         const url = `${baseUrl}/api/admin/products?page=${page}&limit=10${search ? `&search=${search}` : ''}`;
         console.log('Fetching products from:', url);
@@ -26,11 +23,7 @@ async function getProducts(page = 1, search = '') {
 
 async function getCategories() {
     try {
-        const baseUrl = process.env.VERCEL_URL 
-            ? `https://${process.env.VERCEL_URL}`
-            : process.env.NEXT_PUBLIC_SITE_URL 
-            ? process.env.NEXT_PUBLIC_SITE_URL
-            : 'http://localhost:3000';
+        const baseUrl = getBaseUrl();
         
         const res = await fetch(`${baseUrl}/api/admin/categories`, { cache: 'no-store' });
         const json = await res.json();

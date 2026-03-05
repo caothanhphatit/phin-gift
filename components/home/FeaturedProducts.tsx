@@ -3,16 +3,13 @@ import { ArrowRight } from 'lucide-react';
 import AnimateSection from '@/components/AnimateSection';
 import ProductCard, { Product } from '@/components/ProductCard';
 import { getTranslations } from 'next-intl/server';
+import { getBaseUrl } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
 async function getFeaturedProducts() {
     try {
-        const baseUrl = process.env.VERCEL_URL 
-            ? `https://${process.env.VERCEL_URL}`
-            : process.env.NEXT_PUBLIC_SITE_URL 
-            ? process.env.NEXT_PUBLIC_SITE_URL
-            : 'http://localhost:3000';
+        const baseUrl = getBaseUrl();
         
         const res = await fetch(`${baseUrl}/api/admin/products?limit=100`, { cache: 'no-store' });
         const json = await res.json();

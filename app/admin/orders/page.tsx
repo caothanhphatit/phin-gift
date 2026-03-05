@@ -1,4 +1,5 @@
 import { Search } from 'lucide-react';
+import { getBaseUrl } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,11 +15,7 @@ const statusTabs = ['All', 'Pending', 'Processing', 'Shipped', 'Completed', 'Can
 
 async function getOrders() {
     try {
-        const baseUrl = process.env.VERCEL_URL 
-            ? `https://${process.env.VERCEL_URL}`
-            : process.env.NEXT_PUBLIC_SITE_URL 
-            ? process.env.NEXT_PUBLIC_SITE_URL
-            : 'http://localhost:3000';
+        const baseUrl = getBaseUrl();
         const res = await fetch(`${baseUrl}/api/admin/orders?limit=20`, { cache: 'no-store' });
         const json = await res.json();
         return json.data || [];

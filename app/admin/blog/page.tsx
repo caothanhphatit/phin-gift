@@ -1,15 +1,12 @@
 import Link from 'next/link';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { getBaseUrl } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
 async function getBlogPosts() {
     try {
-        const baseUrl = process.env.VERCEL_URL 
-            ? `https://${process.env.VERCEL_URL}`
-            : process.env.NEXT_PUBLIC_SITE_URL 
-            ? process.env.NEXT_PUBLIC_SITE_URL
-            : 'http://localhost:3000';
+        const baseUrl = getBaseUrl();
         const res = await fetch(`${baseUrl}/api/admin/blog`, { cache: 'no-store' });
         const json = await res.json();
         return json.data || [];
