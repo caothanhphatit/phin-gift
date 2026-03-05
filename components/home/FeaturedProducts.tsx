@@ -2,13 +2,29 @@ import { Link } from '@/i18n/routing';
 import { ArrowRight } from 'lucide-react';
 import AnimateSection from '@/components/AnimateSection';
 import ProductCard from '@/components/ProductCard';
-import localProducts from '@/data/products.json';
 import { getTranslations } from 'next-intl/server';
 
+export const dynamic = 'force-dynamic';
+
+async function getFeaturedProducts() {
+    try {
+        const baseUrl = process.env.VERCEL_URL 
+            ? `https://${process.env.VERCEL_URL}`
+            : process.env.NEXT_PUBLIC_SITE_URL 
+            ? process.env.NEXT_PUBLIC_SITE_URL
+            : 'http://localhost:3000';
+        
+        const res = await fetch(`${baseUrl}/api/admin/products?limit=100`, { cache: 'no-store' });
+        const json = await res.json();
+        return (json.data || []).slice(0, 3);
+    } catch (error) {
+        console.error('Failed to fetch featured products:', error);
+        return [];
+    }
+}
+
 export default async function FeaturedProducts() {
-    const products = localProducts as any;
-    // Use first 3 products as featured
-    const featuredProducts = products.slice(0, 3);
+    const featuredProducts = await getFeaturedProducts();
     const t = await getTranslations('nav');
 
     return (

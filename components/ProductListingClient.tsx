@@ -10,30 +10,23 @@ import { useRouter } from '@/i18n/routing';
 import { useLocale, useTranslations } from 'next-intl';
 import { Filter, X } from 'lucide-react';
 
-interface BilingualString {
-    vi: string;
-    en: string;
-}
-
-interface ProductVariant {
-    size: string;
-    color: string;
-    image: string;
-}
-
-interface ProductSheet {
-    id: string;
+interface Product {
+    _id: string;
     slug: string;
-    category: string;
-    title: BilingualString;
-    description: BilingualString;
-    price: number;
-    variants: ProductVariant[];
-    tags: string[];
+    name: {
+        en: string;
+        vi: string;
+    };
+    shortDescription: {
+        en: string;
+        vi: string;
+    };
+    images: Array<{ url: string; publicId: string; isMain: boolean }>;
+    variants: Array<{ sku: string; size?: string; color?: string; price: number; salePrice?: number; stock: number }>;
 }
 
 interface Props {
-    initialProducts: ProductSheet[];
+    initialProducts: Product[];
 }
 
 export default function ProductListingClient({ initialProducts }: Props) {
@@ -61,11 +54,8 @@ export default function ProductListingClient({ initialProducts }: Props) {
     };
 
     const filteredProducts = useMemo(() => {
-        return initialProducts.filter(product => {
-            if (categoryFilter && product.category !== categoryFilter) return false;
-            return true;
-        });
-    }, [initialProducts, categoryFilter]);
+        return initialProducts;
+    }, [initialProducts]);
 
     return (
         <>

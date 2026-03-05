@@ -1,7 +1,25 @@
-import localProducts from '@/data/products.json';
 import ProductListingClient from '@/components/ProductListingClient';
 import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
+
+export const dynamic = 'force-dynamic';
+
+async function getProducts() {
+    try {
+        const baseUrl = process.env.VERCEL_URL 
+            ? `https://${process.env.VERCEL_URL}`
+            : process.env.NEXT_PUBLIC_SITE_URL 
+            ? process.env.NEXT_PUBLIC_SITE_URL
+            : 'http://localhost:3000';
+        
+        const res = await fetch(`${baseUrl}/api/admin/products?limit=100`, { cache: 'no-store' });
+        const json = await res.json();
+        return json.data || [];
+    } catch (error) {
+        console.error('Failed to fetch products:', error);
+        return [];
+    }
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
     const { locale } = await params;
@@ -13,7 +31,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 export default async function ProductsPage() {
-    const products = localProducts;
+    const products = await getProducts();
 
-    return <ProductListingClient initialProducts={products as any} />;
+    return <ProductListingClient initialProducts={products} />;
 }

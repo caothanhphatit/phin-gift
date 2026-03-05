@@ -3,31 +3,54 @@ import type { Metadata } from 'next';
 import { Link } from '@/i18n/routing';
 import AnimateSection from '@/components/AnimateSection';
 import ProductDetailClient from '@/components/ProductDetailClient';
-import localProducts from '@/data/products.json';
 import { getTranslations } from 'next-intl/server';
+
+export const dynamic = 'force-dynamic';
 
 interface Props {
     params: Promise<{ slug: string; locale: string }>;
 }
 
-export async function generateStaticParams() {
-    const products = localProducts as any;
-    // Assuming we support both locales
-    return products.flatMap((p: any) => [
-        { slug: p.slug, locale: 'vi' },
-        { slug: p.slug, locale: 'en' }
-    ]);
+async function getProductBySlug(slug: string) {
+    try {
+        const baseUrl = process.env.VERCEL_URL 
+            ? `https://${process.env.VERCEL_URL}`
+            : process.env.NEXT_PUBLIC_SITE_URL 
+            ? process.env.NEXT_PUBLIC_SITE_URL
+            : 'http://localhost:3000';
+        
+        const res = await fetch(`${baseUrl}/api/admin/products?limit=100`, { cache: 'no-store' });
+        const json = await res.json();
+        return json.data?.find((p: any) => p.slug === slug);
+    } catch (error) {
+        console.error('Failed to fetch product:', error);
+        return null;
+    }
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { slug, locale } = await params;
-    const products = localProducts as any;
-    const product = products.find((p: any) => p.slug === slug);
-    if (!product) return {};
+export async function generateStaticParams() {
+    try {
+        const baseUrl = 'http://localhost:3000';
+        const res = await fetch(`${baseUrl}/api/admin/products?limit=100`, { cache: 'no-store' });
+        const json = await res.json();
+        const products = json.data || [];
+        
+        return products.flatMap((p: any) => [
+            { slug: p.slug, locale: 'vi' },
+            { slug: p.slug, locale: 'en' }
+        ]);
+    } catch {
+        return [];
+    }
+} = await getProductBySlug(slug);
+    if (!product) notFound();
 
-    const title = product.title[locale as 'vi' | 'en'] || product.title['vi'];
-    const desc = product.description[locale as 'vi' | 'en'] || product.description['vi'];
-    const firstImage = product.variants?.[0]?.image || '/images/products/phin-collection.jpg';
+    const t = await getTranslations({ locale, namespace: 'nav' });
+
+    const title = product.name?.[locale as 'vi' | 'en'] || product.name?.['vi'] || product.slug;
+    const desc = product.shortDescription?.[locale as 'vi' | 'en'] || product.shortDescription?.['vi'] || '';
+    const firstImage = product.images?.[0]?.urlas 'vi' | 'en'] || product.shortDescription?.['vi'] || '';
+    const firstImage = product.images?.[0]?.url || '/images/products/phin-collection.jpg';
 
     return {
         title: `${title} | PhinGift`,

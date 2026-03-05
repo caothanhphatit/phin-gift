@@ -7,36 +7,29 @@ import { ShoppingCart, Check } from 'lucide-react';
 import { useCart } from '@/lib/cart-context';
 import { useLocale } from 'next-intl';
 
-interface BilingualString {
-    vi: string;
-    en: string;
-}
-
-interface ProductVariant {
-    size: string;
-    color: string;
-    image: string;
-}
-
-interface ProductSheet {
-    id: string;
+interface Product {
+    _id: string;
     slug: string;
-    category: string;
-    title: BilingualString;
-    description: BilingualString;
-    price: number;
-    variants: ProductVariant[];
-    tags: string[];
+    name: {
+        en: string;
+        vi: string;
+    };
+    shortDescription: {
+        en: string;
+        vi: string;
+    };
+    images: Array<{ url: string; publicId: string; isMain: boolean }>;
+    variants: Array<{ sku: string; size?: string; color?: string; price: number; salePrice?: number; stock: number }>;
 }
 
 interface ProductDetailClientProps {
-    product: ProductSheet;
+    product: Product;
 }
 
 export default function ProductDetailClient({ product }: ProductDetailClientProps) {
     const locale = useLocale() as 'vi' | 'en';
-    const title = product.title[locale] || product.title['vi'];
-    const desc = product.description[locale] || product.description['vi'];
+    const title = product.name[locale] || product.name['vi'];
+    const desc = product.shortDescription[locale] || product.shortDescription['vi'];
 
     // Fallbacks to generic images if variant missing
     const defaultImage = '/images/products/phin-collection.jpg';

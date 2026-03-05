@@ -7,30 +7,23 @@ import { ShoppingCart, ArrowRight } from 'lucide-react';
 import { useCart } from '@/lib/cart-context';
 import { useLocale } from 'next-intl';
 
-interface BilingualString {
-    vi: string;
-    en: string;
-}
-
-interface ProductVariant {
-    size: string;
-    color: string;
-    image: string;
-}
-
-interface ProductSheet {
-    id: string;
+interface Product {
+    _id: string;
     slug: string;
-    category: string;
-    title: BilingualString;
-    description: BilingualString;
-    price: number;
-    variants: ProductVariant[];
-    tags: string[];
+    name: {
+        en: string;
+        vi: string;
+    };
+    shortDescription: {
+        en: string;
+        vi: string;
+    };
+    images: Array<{ url: string; publicId: string; isMain: boolean }>;
+    variants: Array<{ sku: string; size?: string; color?: string; price: number; salePrice?: number; stock: number }>;
 }
 
 interface ProductCardProps {
-    product: ProductSheet;
+    product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
@@ -38,20 +31,20 @@ export default function ProductCard({ product }: ProductCardProps) {
     const locale = useLocale() as 'vi' | 'en';
 
     const firstVariant = product.variants?.[0];
-    const displayImage = firstVariant?.image || '/images/products/phin-collection.jpg';
-    const displayTitle = product.title[locale] || product.title['vi'];
-    const displayDescription = product.description[locale] || product.description['vi'];
-    const displayPrice = product.price || 0;
+    const displayImage = product.images?.[0]?.url || '/images/products/phin-collection.jpg';
+    const displayTitle = product.name[locale] || product.name['vi'];
+    const displayDescription = product.shortDescription[locale] || product.shortDescription['vi'];
+    const displayPrice = firstVariant?.price || 0;
 
     const handleQuickAdd = (e: React.MouseEvent) => {
         e.preventDefault();
         if (!firstVariant) return;
         addToCart({
-            productId: product.id,
+            productId: product._id,
             productSlug: product.slug,
             productName: displayTitle,
-            material: product.category as any,
-            materialLabel: product.category === 'inox' ? 'Inox' : 'Nhôm',
+            material: '' as any,
+            materialLabel: '',
             size: firstVariant.size as any,
             engravingText: '',
             price: displayPrice,
