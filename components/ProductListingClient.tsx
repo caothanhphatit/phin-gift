@@ -10,6 +10,28 @@ import { useRouter } from '@/i18n/routing';
 import { useLocale, useTranslations } from 'next-intl';
 import { Filter, X } from 'lucide-react';
 
+interface BilingualString {
+    vi: string;
+    en: string;
+}
+
+interface ProductVariant {
+    size: string;
+    color: string;
+    image: string;
+}
+
+interface ProductSheet {
+    id: string;
+    slug: string;
+    category: string;
+    title: BilingualString;
+    description: BilingualString;
+    price: number;
+    variants: ProductVariant[];
+    tags: string[];
+}
+
 interface Props {
     initialProducts: ProductSheet[];
 }

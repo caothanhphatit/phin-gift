@@ -7,6 +7,28 @@ import { ShoppingCart, Check } from 'lucide-react';
 import { useCart } from '@/lib/cart-context';
 import { useLocale } from 'next-intl';
 
+interface BilingualString {
+    vi: string;
+    en: string;
+}
+
+interface ProductVariant {
+    size: string;
+    color: string;
+    image: string;
+}
+
+interface ProductSheet {
+    id: string;
+    slug: string;
+    category: string;
+    title: BilingualString;
+    description: BilingualString;
+    price: number;
+    variants: ProductVariant[];
+    tags: string[];
+}
+
 interface ProductDetailClientProps {
     product: ProductSheet;
 }
