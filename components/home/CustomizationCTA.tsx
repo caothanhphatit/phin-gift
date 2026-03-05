@@ -41,7 +41,7 @@ export default function CustomizationCTA() {
                                 Xem Sản Phẩm
                                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                             </Link>
-                            <Link href="/contact" className="btn-primary bg-[var(--color-gold)] border-[var(--color-gold)] hover:bg-[var(--color-gold-light)] hover:border-[var(--color-gold-light)] text-[var(--color-brown)]">
+                            <Link href="/products/phin-ca-phe-khac-logo" className="btn-primary bg-[var(--color-gold)] border-[var(--color-gold)] hover:bg-[var(--color-gold-light)] hover:border-[var(--color-gold-light)] text-[var(--color-brown)]">
                                 Liên Hệ Đặt Sỉ
                             </Link>
                         </div>

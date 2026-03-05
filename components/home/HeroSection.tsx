@@ -71,7 +71,7 @@ export default function HeroSection() {
                             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                         </Link>
                         <Link
-                            href="/contact"
+                            href="/products/phin-ca-phe-khac-logo"
                             className="btn-outline-light"
                         >
                             Đặt Hàng Sỉ / B2B
