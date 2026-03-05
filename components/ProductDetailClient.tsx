@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ShoppingCart, Check } from 'lucide-react';
-import { ProductSheet } from '@/lib/gsheets';
 import { useCart } from '@/lib/cart-context';
 import { useLocale } from 'next-intl';
 

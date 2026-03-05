@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { Link } from '@/i18n/routing';
 import AnimateSection from '@/components/AnimateSection';
 import ProductDetailClient from '@/components/ProductDetailClient';
-import { getProducts } from '@/lib/gsheets';
+import localProducts from '@/data/products.json';
 import { getTranslations } from 'next-intl/server';
 
 interface Props {
@@ -11,9 +11,9 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-    const products = await getProducts();
+    const products = localProducts as any;
     // Assuming we support both locales
-    return products.flatMap((p) => [
+    return products.flatMap((p: any) => [
         { slug: p.slug, locale: 'vi' },
         { slug: p.slug, locale: 'en' }
     ]);
@@ -21,8 +21,8 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug, locale } = await params;
-    const products = await getProducts();
-    const product = products.find(p => p.slug === slug);
+    const products = localProducts as any;
+    const product = products.find((p: any) => p.slug === slug);
     if (!product) return {};
 
     const title = product.title[locale as 'vi' | 'en'] || product.title['vi'];
@@ -42,8 +42,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProductDetailPage({ params }: Props) {
     const { slug, locale } = await params;
-    const products = await getProducts();
-    const product = products.find(p => p.slug === slug);
+    const products = localProducts as any;
+    const product = products.find((p: any) => p.slug === slug);
     if (!product) notFound();
 
     const t = await getTranslations({ locale, namespace: 'nav' });

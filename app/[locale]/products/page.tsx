@@ -1,4 +1,4 @@
-import { getProducts } from '@/lib/gsheets';
+import localProducts from '@/data/products.json';
 import ProductListingClient from '@/components/ProductListingClient';
 import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 export default async function ProductsPage() {
-    const products = await getProducts();
+    const products = localProducts;
 
-    return <ProductListingClient initialProducts={products} />;
+    return <ProductListingClient initialProducts={products as any} />;
 }

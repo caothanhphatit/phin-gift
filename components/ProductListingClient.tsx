@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import AnimateSection from '@/components/AnimateSection';
 import ProductCard from '@/components/ProductCard';
-import { ProductSheet } from '@/lib/gsheets';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/routing';
 import { useLocale, useTranslations } from 'next-intl';

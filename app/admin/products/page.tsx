@@ -6,7 +6,13 @@ export const dynamic = 'force-dynamic';
 
 async function getProducts(page = 1, search = '') {
     try {
-        const url = `/api/admin/products?page=${page}&limit=10${search ? `&search=${search}` : ''}`;
+        const baseUrl = process.env.VERCEL_URL 
+            ? `https://${process.env.VERCEL_URL}`
+            : process.env.NEXT_PUBLIC_SITE_URL 
+            ? process.env.NEXT_PUBLIC_SITE_URL
+            : 'http://localhost:3000';
+        
+        const url = `${baseUrl}/api/admin/products?page=${page}&limit=10${search ? `&search=${search}` : ''}`;
         console.log('Fetching products from:', url);
         const res = await fetch(url, { cache: 'no-store' });
         const json = await res.json();
@@ -14,7 +20,13 @@ async function getProducts(page = 1, search = '') {
         return json;
     } catch (error) {
         console.error('Products fetch error:', error);
-        return { data: [], total: 0, totalPages: 1 };
+        returnbaseUrl = process.env.VERCEL_URL 
+            ? `https://${process.env.VERCEL_URL}`
+            : process.env.NEXT_PUBLIC_SITE_URL 
+            ? process.env.NEXT_PUBLIC_SITE_URL
+            : 'http://localhost:3000';
+        
+        const res = await fetch(`${baseUrl}/api/admin/categories`
     }
 }
 

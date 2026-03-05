@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { motion } from 'framer-motion';
 import { ShoppingCart, ArrowRight } from 'lucide-react';
-import { ProductSheet } from '@/lib/gsheets';
 import { useCart } from '@/lib/cart-context';
 import { useLocale } from 'next-intl';
 

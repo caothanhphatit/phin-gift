@@ -2,11 +2,11 @@ import { Link } from '@/i18n/routing';
 import { ArrowRight } from 'lucide-react';
 import AnimateSection from '@/components/AnimateSection';
 import ProductCard from '@/components/ProductCard';
-import { getProducts } from '@/lib/gsheets';
+import localProducts from '@/data/products.json';
 import { getTranslations } from 'next-intl/server';
 
 export default async function FeaturedProducts() {
-    const products = await getProducts();
+    const products = localProducts as any;
     // Use first 3 products as featured
     const featuredProducts = products.slice(0, 3);
     const t = await getTranslations('nav');

@@ -4,7 +4,12 @@ export const dynamic = 'force-dynamic';
 
 async function getB2BOrders() {
     try {
-        const res = await fetch('/api/admin/b2b-orders', { cache: 'no-store' });
+        const baseUrl = process.env.VERCEL_URL 
+            ? `https://${process.env.VERCEL_URL}`
+            : process.env.NEXT_PUBLIC_SITE_URL 
+            ? process.env.NEXT_PUBLIC_SITE_URL
+            : 'http://localhost:3000';
+        const res = await fetch(`${baseUrl}/api/admin/b2b-orders`, { cache: 'no-store' });
         const json = await res.json();
         return json.data || [];
     } catch {
