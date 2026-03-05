@@ -4,7 +4,7 @@ import ProductImage from '@/components/admin/ProductImage';
 
 async function getProducts(page = 1, search = '') {
     try {
-        const url = `http://localhost:3000/api/admin/products?page=${page}&limit=10${search ? `&search=${search}` : ''}`;
+        const url = `/api/admin/products?page=${page}&limit=10${search ? `&search=${search}` : ''}`;
         const res = await fetch(url, { cache: 'no-store' });
         const json = await res.json();
         return json;
@@ -15,7 +15,7 @@ async function getProducts(page = 1, search = '') {
 
 async function getCategories() {
     try {
-        const res = await fetch('http://localhost:3000/api/admin/categories', { cache: 'no-store' });
+        const res = await fetch('/api/admin/categories', { cache: 'no-store' });
         const json = await res.json();
         return json.data || [];
     } catch {

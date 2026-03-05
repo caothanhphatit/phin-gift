@@ -12,7 +12,7 @@ const statusTabs = ['All', 'Pending', 'Processing', 'Shipped', 'Completed', 'Can
 
 async function getOrders() {
     try {
-        const res = await fetch('http://localhost:3000/api/admin/orders?limit=20', { cache: 'no-store' });
+        const res = await fetch('/api/admin/orders?limit=20', { cache: 'no-store' });
         const json = await res.json();
         return json.data || [];
     } catch {

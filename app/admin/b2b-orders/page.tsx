@@ -2,7 +2,7 @@ import { PhoneCall, Eye } from 'lucide-react';
 
 async function getB2BOrders() {
     try {
-        const res = await fetch('http://localhost:3000/api/admin/b2b-orders', { cache: 'no-store' });
+        const res = await fetch('/api/admin/b2b-orders', { cache: 'no-store' });
         const json = await res.json();
         return json.data || [];
     } catch {

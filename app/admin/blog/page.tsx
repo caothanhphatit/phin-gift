@@ -3,7 +3,7 @@ import { Plus, Edit2, Trash2 } from 'lucide-react';
 
 async function getBlogPosts() {
     try {
-        const res = await fetch('http://localhost:3000/api/admin/blog', { cache: 'no-store' });
+        const res = await fetch('/api/admin/blog', { cache: 'no-store' });
         const json = await res.json();
         return json.data || [];
     } catch {
