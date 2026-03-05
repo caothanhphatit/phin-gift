@@ -1,7 +1,18 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Clock, ArrowRight } from 'lucide-react';
-import { BlogPost } from '@/lib/blog';
+
+interface BlogPost {
+    id: string;
+    slug: string;
+    title: string;
+    excerpt: string;
+    image: string;
+    imageAlt: string;
+    category: string;
+    readingTime: number;
+    publishedAt: string;
+}
 
 interface BlogCardProps {
     post: BlogPost;

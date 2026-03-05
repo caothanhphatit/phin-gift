@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import AnimateSection from '@/components/AnimateSection';
 import BlogCard from '@/components/BlogCard';
-import { blogPosts } from '@/lib/blog';
+import dbConnect from '@/lib/mongodb';
+import BlogPost from '@/models/BlogPost';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
     title: 'Blog Cà Phê Phin | Hướng Dẫn & Kiến Thức | PhinGift',
@@ -12,7 +15,20 @@ export const metadata: Metadata = {
     },
 };
 
-export default function BlogPage() {
+async function getPosts() {
+    try {
+        await dbConnect();
+        const posts = await BlogPost.find({ status: 'Published' }).sort({ createdAt: -1 }).lean();
+        return JSON.parse(JSON.stringify(posts));
+    } catch (error) {
+        console.error('Failed to fetch posts:', error);
+        return [];
+    }
+}
+
+export default async function BlogPage() {
+    const posts = await getPosts();
+
     return (
         <>
             {/* Header */}
@@ -32,9 +48,24 @@ export default function BlogPage() {
             <section className="section-padding bg-[var(--color-cream)]">
                 <div className="container-custom">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {blogPosts.map((post, i) => (
-                            <AnimateSection key={post.id} delay={i * 0.1}>
-                                <BlogCard post={post} />
+                        {posts.map((post: any, i: number) => (
+                            <AnimateSection key={post._id} delay={i * 0.1}>
+                                <BlogCard post={{
+                                    id: post._id,
+                                    slug: post.slug,
+                                    title: post.title?.vi || post.title?.en,
+                                    excerpt: post.excerpt?.vi || post.excerpt?.en,
+                                    image: post.featuredImageUrl || '/images/hero/phin-coffee-pour.jpg',
+                                    imageAlt: post.title?.vi || 'Blog Image',
+                                    category: 'Kinh nghiệm', // Default category
+                                    readingTime: 5, // Default reading time
+                                    publishedAt: post.createdAt,
+                                    tags: [],
+                                    relatedProducts: [],
+                                    metaTitle: '',
+                                    metaDescription: '',
+                                    content: []
+                                }} />
                             </AnimateSection>
                         ))}
                     </div>
