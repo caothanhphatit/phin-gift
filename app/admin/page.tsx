@@ -27,8 +27,8 @@ const statusStyles: Record<string, string> = {
     Cancelled: 'bg-red-500/10 text-red-400 border border-red-500/20',
 };
 
-function formatVND(amount: number) {
-    return `₫${amount.toLocaleString('vi-VN')}`;
+function formatVND(amount: number | undefined | null) {
+    return `₫${(amount ?? 0).toLocaleString('vi-VN')}`;
 }
 
 function formatDate(dateStr: string) {
@@ -91,8 +91,8 @@ export default async function AdminDashboard() {
                                 {recentOrders.map((order: any) => (
                                     <tr key={order._id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
                                         <td className="px-6 py-4 text-sm text-[#C9A84C] font-mono">#{order.orderNumber}</td>
-                                        <td className="px-6 py-4 text-sm text-white">{order.customer?.name}</td>
-                                        <td className="px-6 py-4 text-sm text-white font-medium">{formatVND(order.total)}</td>
+                                        <td className="px-6 py-4 text-sm text-white">{order.shipping?.name || 'N/A'}</td>
+                                        <td className="px-6 py-4 text-sm text-white font-medium">{formatVND(order.pricing?.total)}</td>
                                         <td className="px-6 py-4">
                                             <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusStyles[order.status]}`}>{order.status}</span>
                                         </td>

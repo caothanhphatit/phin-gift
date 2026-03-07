@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import AnimateSection from '@/components/AnimateSection';
 import { ArrowRight, Star } from 'lucide-react';
 

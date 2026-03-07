@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
-import { Link } from '@/i18n/routing';
 import AnimateSection from '@/components/AnimateSection';
 import ProductCard from '@/components/ProductCard';
 import { useSearchParams } from 'next/navigation';
@@ -10,20 +9,20 @@ import { useRouter } from '@/i18n/routing';
 import { useLocale, useTranslations } from 'next-intl';
 import { Filter, X } from 'lucide-react';
 
+interface Category {
+    _id: string;
+    name: { en: string; vi: string };
+    isActive: boolean;
+}
+
 interface Product {
     _id: string;
     slug: string;
-    name: {
-        en: string;
-        vi: string;
-    };
-    shortDescription?: {
-        en?: string;
-        vi?: string;
-    };
+    name: { en: string; vi: string };
+    shortDescription?: { en?: string; vi?: string };
     images: Array<{ url: string; publicId: string; isMain: boolean }>;
     variants: Array<{ sku: string; size?: string; color?: string; price: number; salePrice?: number; stock: number }>;
-    categories?: string[];
+    categories?: any[]; // Array of ObjectId strings or populated objects
 }
 
 interface Props {
@@ -36,31 +35,44 @@ export default function ProductListingClient({ initialProducts }: Props) {
     const locale = useLocale() as 'vi' | 'en';
     const t = useTranslations('product');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [categories, setCategories] = useState<Category[]>([]);
 
-    // Filters
+    useEffect(() => {
+        fetch('/api/admin/categories')
+            .then(r => r.json())
+            .then(json => { if (json.success) setCategories(json.data || []); })
+            .catch(() => { });
+    }, []);
+
+    // categoryFilter is an ObjectId string from the URL query param
     const categoryFilter = searchParams.get('category');
 
-    const updateFilter = (key: string, value: string | null) => {
-        if (value) {
-            router.push(`?${key}=${value}`, { scroll: false });
+    const updateFilter = (categoryId: string | null) => {
+        if (categoryId) {
+            router.push(`?category=${categoryId}`, { scroll: false });
         } else {
             router.push('/products', { scroll: false });
         }
     };
 
-    const clearFilters = () => {
-        router.push('/products', { scroll: false });
-    };
-
     const filteredProducts = useMemo(() => {
-        let products = initialProducts;
+        if (!categoryFilter) return initialProducts;
 
-        if (categoryFilter) {
-            products = products.filter((p) => p.categories?.includes(categoryFilter));
-        }
-
-        return products;
+        return initialProducts.filter(p => {
+            if (!p.categories || p.categories.length === 0) return false;
+            // categories can be ObjectId strings or populated objects with _id
+            return p.categories.some((c: any) => {
+                const id = typeof c === 'object' ? (c._id?.toString() || c.toString()) : String(c);
+                return id === categoryFilter;
+            });
+        });
     }, [initialProducts, categoryFilter]);
+
+    const activeCategoryName = useMemo(() => {
+        if (!categoryFilter) return null;
+        const found = categories.find(c => c._id === categoryFilter);
+        return found?.name?.[locale] || null;
+    }, [categoryFilter, categories, locale]);
 
     return (
         <>
@@ -75,7 +87,9 @@ export default function ProductListingClient({ initialProducts }: Props) {
                             {locale === 'en' ? 'Our Products' : 'Sản Phẩm'}
                         </span>
                         <h1 className="heading-display text-white mb-4">
-                            {locale === 'en' ? 'Coffee Filter Collection' : 'Bộ Sưu Tập Phin'}
+                            {activeCategoryName
+                                ? activeCategoryName
+                                : locale === 'en' ? 'Coffee Filter Collection' : 'Bộ Sưu Tập Phin'}
                         </h1>
                         <p className="text-white/60 max-w-xl mx-auto">
                             {locale === 'en'
@@ -102,38 +116,43 @@ export default function ProductListingClient({ initialProducts }: Props) {
                         </div>
 
                         {/* Sidebar */}
-                        <aside className={`w-full md:w-1/4 space-y-8 ${isFilterOpen ? 'block' : 'hidden md:block'}`}>
-                            {/* Categories */}
-                            <div>
-                                <h3 className="font-serif text-lg mb-4 text-[var(--color-brown)]">{t('categoryTitle')}</h3>
-                                <div className="space-y-2">
-                                    <button
-                                        onClick={() => updateFilter('category', null)}
-                                        className={`block w-full text-left text-sm ${!categoryFilter ? 'font-bold text-[var(--color-gold)]' : 'text-gray-600'}`}
-                                    >
-                                        {t('allCategories')}
-                                    </button>
-                                    <button
-                                        onClick={() => updateFilter('category', 'inox')}
-                                        className={`block w-full text-left text-sm ${categoryFilter === 'inox' ? 'font-bold text-[var(--color-gold)]' : 'text-gray-600'}`}
-                                    >
-                                        {t('inoxFilter')}
-                                    </button>
-                                    <button
-                                        onClick={() => updateFilter('category', 'nhom')}
-                                        className={`block w-full text-left text-sm ${categoryFilter === 'nhom' ? 'font-bold text-[var(--color-gold)]' : 'text-gray-600'}`}
-                                    >
-                                        {t('nhomFilter')}
-                                    </button>
+                        <aside className={`w-full md:w-1/4 space-y-4 ${isFilterOpen ? 'block' : 'hidden md:block'}`}>
+                            <h3 className="font-serif text-lg text-[var(--color-brown)]">{t('categoryTitle')}</h3>
+                            <div className="space-y-2">
+                                <button
+                                    onClick={() => updateFilter(null)}
+                                    className={`block w-full text-left text-sm py-1.5 px-2 rounded transition-colors ${!categoryFilter
+                                            ? 'font-bold text-[var(--color-gold)] bg-[var(--color-gold)]/10'
+                                            : 'text-gray-600 hover:text-[var(--color-brown)]'
+                                        }`}
+                                >
+                                    {t('allCategories')}
+                                </button>
 
-                                </div>
+                                {categories.map(cat => (
+                                    <button
+                                        key={cat._id}
+                                        onClick={() => updateFilter(cat._id)}
+                                        className={`block w-full text-left text-sm py-1.5 px-2 rounded transition-colors ${categoryFilter === cat._id
+                                                ? 'font-bold text-[var(--color-gold)] bg-[var(--color-gold)]/10'
+                                                : 'text-gray-600 hover:text-[var(--color-brown)]'
+                                            }`}
+                                    >
+                                        {cat.name?.[locale] || cat.name?.en}
+                                    </button>
+                                ))}
+
+                                {categories.length === 0 && (
+                                    [1, 2, 3].map(i => (
+                                        <div key={i} className="h-7 bg-gray-100 rounded animate-pulse" />
+                                    ))
+                                )}
                             </div>
-
 
                             {categoryFilter && (
                                 <button
-                                    onClick={clearFilters}
-                                    className="pt-4 text-sm text-[var(--color-gold)] flex items-center gap-1 hover:underline"
+                                    onClick={() => updateFilter(null)}
+                                    className="pt-2 text-sm text-[var(--color-gold)] flex items-center gap-1 hover:underline"
                                 >
                                     <X size={14} /> {t('clearFilters')}
                                 </button>

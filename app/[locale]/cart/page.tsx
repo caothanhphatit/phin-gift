@@ -5,10 +5,32 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, Plus, Minus, ShoppingCart, ArrowRight } from 'lucide-react';
 import { useCart } from '@/lib/cart-context';
+import { useLocale } from 'next-intl';
+import { useRouter } from '@/i18n/routing';
+import { useState } from 'react';
+import OTPVerificationModal from '@/components/checkout/OTPVerificationModal';
 
 export default function CartPage() {
     const { state, dispatch, totalPrice } = useCart();
     const { items } = state;
+    const locale = useLocale();
+    const router = useRouter();
+
+    const [isOtpOpen, setIsOtpOpen] = useState(false);
+
+    const handleCheckoutClick = () => {
+        const customerId = sessionStorage.getItem('phin_customer_id');
+        if (customerId) {
+            router.push('/checkout');
+        } else {
+            setIsOtpOpen(true);
+        }
+    };
+
+    const handleOtpVerified = (customerId: string) => {
+        setIsOtpOpen(false);
+        router.push('/checkout');
+    };
 
     if (items.length === 0) {
         return (
@@ -64,8 +86,12 @@ export default function CartPage() {
                                             {item.productName}
                                         </h3>
                                         <div className="text-sm text-[var(--color-text-muted)] space-y-0.5 mb-3">
-                                            <p>Chất liệu: <span className="text-[var(--color-brown)]">{item.materialLabel}</span></p>
-                                            <p>Kích thước: <span className="text-[var(--color-brown)]">{item.size}</span></p>
+                                            {item.attributes && Object.entries(item.attributes).map(([key, val]) => {
+                                                const displayVal = val && typeof val === 'object' ? (val as any)[locale] || (val as any).vi || (val as any).en : String(val);
+                                                return (
+                                                    <p key={key} className="capitalize">{key}: <span className="text-[var(--color-brown)]">{displayVal}</span></p>
+                                                );
+                                            })}
                                             {item.engravingText && (
                                                 <p>Khắc: <span className="text-[var(--color-brown)] italic">"{item.engravingText}"</span></p>
                                             )}
@@ -137,16 +163,23 @@ export default function CartPage() {
                                 </div>
                             </div>
 
-                            <Link href="/checkout" className="btn-primary w-full justify-center mb-3">
+                            <button onClick={handleCheckoutClick} className="btn-primary w-full justify-center mb-3 py-3.5 flex items-center gap-2">
                                 Thanh Toán Ngay <ArrowRight size={16} />
-                            </Link>
-                            <Link href="/products" className="btn-outline w-full justify-center text-sm">
+                            </button>
+                            <Link href="/products" className="btn-outline w-full justify-center text-sm py-3.5 flex items-center">
                                 Tiếp Tục Mua Hàng
                             </Link>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* OTP Modal */}
+            <OTPVerificationModal
+                isOpen={isOtpOpen}
+                onClose={() => setIsOtpOpen(false)}
+                onVerified={handleOtpVerified}
+            />
         </section>
     );
 }

@@ -56,6 +56,9 @@ export const metadata: Metadata = {
 
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
+import CartDrawer from '@/components/CartDrawer';
+import ScrollToTop from '@/components/ScrollToTop';
+import { Suspense } from 'react';
 
 export default async function RootLayout({
   children,
@@ -72,7 +75,11 @@ export default async function RootLayout({
       <body className="font-sans bg-cream text-brown">
         <NextIntlClientProvider messages={messages}>
           <CartProvider>
+            <Suspense fallback={null}>
+              <ScrollToTop />
+            </Suspense>
             <Navbar />
+            <CartDrawer />
             <main>{children}</main>
             <Footer />
           </CartProvider>

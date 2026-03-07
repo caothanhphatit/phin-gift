@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, X, CheckCircle, Info } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -29,6 +29,10 @@ export default function B2BCustomOrderForm() {
     const [isSuccess, setIsSuccess] = useState(false);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
     const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
 
     const { register, handleSubmit, watch, formState: { errors } } = useForm<FormValues>({
         defaultValues: {
