@@ -1,70 +1,95 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+export enum OrderStatus {
+    PENDING = 'PENDING',
+    PROCESSING = 'PROCESSING',
+    SHIPPED = 'SHIPPED',
+    COMPLETED = 'COMPLETED',
+    CANCELLED = 'CANCELLED',
+}
+
+export enum PaymentStatus {
+    UNPAID = 'UNPAID',
+    PAID = 'PAID',
+    FAILED = 'FAILED',
+    REFUNDED = 'REFUNDED',
+}
+
 export interface IOrderItem {
     productId: mongoose.Types.ObjectId;
-    variantId?: string;
-    name: string;
-    price: number;
+    variantId?: mongoose.Types.ObjectId | null;
+    productNameSnapshot: string;
+    variantNameSnapshot?: string | null;
+    unitPrice: number;
     quantity: number;
+    totalPrice: number;
 }
 
 export interface IOrder extends Document {
     orderNumber: string;
-    customer: {
+    customerId: mongoose.Types.ObjectId;
+    status: OrderStatus;
+    pricing: {
+        subtotal: number;
+        discount: number;
+        total: number;
+        currency: string;
+    };
+    payment: {
+        method: string;
+        status: PaymentStatus;
+        paidAt?: Date | null;
+    };
+    shipping: {
         name: string;
-        email: string;
         phone: string;
         address: string;
-        city: string;
-        country: string;
     };
     items: IOrderItem[];
-    subtotal: number;
-    shippingFee: number;
-    total: number;
-    status: 'Pending' | 'Processing' | 'Shipped' | 'Completed' | 'Cancelled';
-    paymentMethod: string;
-    paymentStatus: 'Pending' | 'Paid' | 'Failed';
-    notes?: string;
     createdAt: Date;
     updatedAt: Date;
 }
 
 const OrderItemSchema = new Schema({
     productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
-    variantId: { type: String },
-    name: { type: String, required: true },
-    price: { type: Number, required: true },
+    variantId: { type: Schema.Types.ObjectId, default: null },
+    productNameSnapshot: { type: String, required: true },
+    variantNameSnapshot: { type: String, default: null },
+    unitPrice: { type: Number, required: true },
     quantity: { type: Number, required: true },
+    totalPrice: { type: Number, required: true },
 });
 
 const OrderSchema: Schema = new Schema(
     {
         orderNumber: { type: String, required: true, unique: true },
-        customer: {
-            name: { type: String, required: true },
-            email: { type: String, required: true },
-            phone: { type: String, required: true },
-            address: { type: String, required: true },
-            city: { type: String, required: true },
-            country: { type: String, default: 'Vietnam' },
-        },
-        items: [OrderItemSchema],
-        subtotal: { type: Number, required: true },
-        shippingFee: { type: Number, required: true, default: 0 },
-        total: { type: Number, required: true },
+        customerId: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
         status: {
             type: String,
-            enum: ['Pending', 'Processing', 'Shipped', 'Completed', 'Cancelled'],
-            default: 'Pending',
+            enum: Object.values(OrderStatus),
+            default: OrderStatus.PENDING,
         },
-        paymentMethod: { type: String, required: true, default: 'COD' },
-        paymentStatus: {
-            type: String,
-            enum: ['Pending', 'Paid', 'Failed'],
-            default: 'Pending',
+        pricing: {
+            subtotal: { type: Number, required: true },
+            discount: { type: Number, default: 0 },
+            total: { type: Number, required: true },
+            currency: { type: String, default: 'VND' },
         },
-        notes: { type: String },
+        payment: {
+            method: { type: String, required: true, default: 'COD' },
+            status: {
+                type: String,
+                enum: Object.values(PaymentStatus),
+                default: PaymentStatus.UNPAID,
+            },
+            paidAt: { type: Date, default: null },
+        },
+        shipping: {
+            name: { type: String, required: true },
+            phone: { type: String, required: true },
+            address: { type: String, required: true },
+        },
+        items: [OrderItemSchema],
     },
     {
         timestamps: true,

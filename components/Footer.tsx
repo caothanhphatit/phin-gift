@@ -8,17 +8,10 @@ export default function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
                     {/* Brand */}
                     <div className="lg:col-span-1">
-                        <div className="flex items-center gap-2.5 mb-5">
-                            <div className="w-9 h-9 rounded-full bg-[var(--color-gold)] flex items-center justify-center">
-                                <svg viewBox="0 0 36 36" fill="none" className="w-5 h-5">
-                                    <ellipse cx="18" cy="20" rx="10" ry="7" fill="white" opacity="0.15" />
-                                    <path d="M12 12 L14 26 L22 26 L24 12 Z" fill="white" opacity="0.7" />
-                                    <circle cx="18" cy="10" r="3" fill="white" />
-                                    <path d="M10 12 H26" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-                                    <path d="M11 26 H25" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-                                </svg>
-                            </div>
-                            <span className="font-serif text-xl text-white font-semibold tracking-wide">PhinGift</span>
+                        <div className="flex items-center mb-5">
+                            <span className="font-serif text-xl md:text-2xl text-white font-medium tracking-tight">
+                                PhinGift
+                            </span>
                         </div>
                         <p className="text-sm leading-relaxed mb-6 text-white/60">
                             Phin cà phê khắc logo cao cấp – kết hợp giữa nghệ thuật thủ công Việt Nam và công nghệ khắc laser hiện đại.

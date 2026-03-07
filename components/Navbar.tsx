@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Link, usePathname, useRouter } from '@/i18n/routing';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Menu, X, ChevronDown, Globe } from 'lucide-react';
@@ -11,7 +12,7 @@ export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-    const { totalItems } = useCart();
+    const { totalItems, dispatch } = useCart();
     const pathname = usePathname();
     const router = useRouter();
     const locale = useLocale();
@@ -86,17 +87,8 @@ export default function Navbar() {
                 <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16">
                     <div className="flex items-center justify-between h-16 md:h-20">
                         {/* Logo */}
-                        <Link href="/" className="flex items-center gap-2.5">
-                            <div className="w-9 h-9 rounded-full bg-[var(--color-gold)] flex items-center justify-center">
-                                <svg viewBox="0 0 36 36" fill="none" className="w-5 h-5">
-                                    <ellipse cx="18" cy="20" rx="10" ry="7" fill="white" opacity="0.15" />
-                                    <path d="M12 12 L14 26 L22 26 L24 12 Z" fill="white" opacity="0.7" />
-                                    <circle cx="18" cy="10" r="3" fill="white" />
-                                    <path d="M10 12 H26" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-                                    <path d="M11 26 H25" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-                                </svg>
-                            </div>
-                            <span className="font-serif text-xl text-white font-semibold tracking-wide">
+                        <Link href="/" className="flex items-center group">
+                            <span className="font-serif text-2xl md:text-3xl text-white font-medium tracking-tight transition-all duration-300 group-hover:text-[var(--color-gold)]">
                                 PhinGift
                             </span>
                         </Link>
@@ -182,8 +174,8 @@ export default function Navbar() {
                                 <span className="text-[9px] text-[var(--color-gold)]/70 tracking-wider whitespace-nowrap">🇻🇳 Proudly Made in Vietnam</span>
                             </div>
 
-                            <Link
-                                href="/cart"
+                            <button
+                                onClick={() => dispatch({ type: 'TOGGLE_CART' })}
                                 className="relative text-white/80 hover:text-white transition-colors p-2"
                                 aria-label="Giỏ hàng"
                             >
@@ -197,7 +189,7 @@ export default function Navbar() {
                                         {totalItems}
                                     </motion.span>
                                 )}
-                            </Link>
+                            </button>
 
                             {/* Mobile hamburger */}
                             <button

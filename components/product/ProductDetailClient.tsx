@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Minus, Plus, ShoppingCart, CreditCard } from 'lucide-react';
 import ProductGallery from './ProductGallery';
 import ProductTabs from './ProductTabs';
+import { useCart } from '@/lib/cart-context';
 
 interface ProductDetailClientProps {
     product: any;
@@ -31,6 +32,8 @@ export default function ProductDetailClient({ product, locale }: ProductDetailCl
     // Selection State
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
     const [quantity, setQuantity] = useState(1);
+
+    const { addToCart, dispatch } = useCart();
 
     // 1. Auto-select first available variant on load
     useEffect(() => {
@@ -132,7 +135,17 @@ export default function ProductDetailClient({ product, locale }: ProductDetailCl
     };
 
     const handleAddToCart = () => {
-        alert(`Added ${quantity} of ${basicInfo.name} to cart. SKU: ${activeVariant?.sku || 'Default'}`);
+        addToCart({
+            productId: product._id,
+            productSlug: product.slug,
+            productName: basicInfo.name,
+            attributes: activeVariant?.attributes ? activeVariant.attributes : selectedAttributes,
+            engravingText: '',
+            price: activeVariant ? activeVariant.price : displayPrice,
+            quantity: quantity,
+            image: activeImageUrl || images[0]?.url || '/images/products/phin-collection.jpg',
+        });
+        dispatch({ type: 'TOGGLE_CART' });
     };
 
     return (

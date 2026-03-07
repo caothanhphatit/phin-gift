@@ -56,6 +56,7 @@ export const metadata: Metadata = {
 
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
+import CartDrawer from '@/components/CartDrawer';
 
 export default async function RootLayout({
   children,
@@ -73,6 +74,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <CartProvider>
             <Navbar />
+            <CartDrawer />
             <main>{children}</main>
             <Footer />
           </CartProvider>

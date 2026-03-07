@@ -8,16 +8,15 @@ export async function GET() {
     try {
         await dbConnect();
 
-        // Get total revenue from completed orders
         const revenueAgg = await Order.aggregate([
-            { $match: { status: 'Completed' } },
-            { $group: { _id: null, total: { $sum: '$total' } } },
+            { $match: { status: 'COMPLETED' } },
+            { $group: { _id: null, total: { $sum: '$pricing.total' } } },
         ]);
         const totalRevenue = revenueAgg[0]?.total || 0;
 
         const [totalOrders, totalProducts, recentOrders] = await Promise.all([
             Order.countDocuments(),
-            Product.countDocuments({ isActive: true }),
+            Product.countDocuments({ status: 'published' }),
             Order.find({}).sort({ createdAt: -1 }).limit(5).lean(),
         ]);
 

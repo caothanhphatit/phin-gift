@@ -7,9 +7,7 @@ export interface CartItem {
     productId: string;
     productSlug: string;
     productName: string;
-    material: string;
-    materialLabel: string;
-    size: string;
+    attributes?: Record<string, string>; // e.g. { size: 'Standard', color: 'Silver' } or { "kích thước": "Tiêu chuẩn" }
     engravingText: string;
     price: number;
     quantity: number;
@@ -27,16 +25,22 @@ type CartAction =
     | { type: 'UPDATE_QUANTITY'; payload: { id: string; quantity: number } }
     | { type: 'CLEAR_CART' }
     | { type: 'TOGGLE_CART' }
-    | { type: 'CLOSE_CART' };
+    | { type: 'CLOSE_CART' }
+    | { type: 'SET_ITEMS'; payload: CartItem[] };
 
 function cartReducer(state: CartState, action: CartAction): CartState {
     switch (action.type) {
         case 'ADD_ITEM': {
             const existingIndex = state.items.findIndex((item) => item.id === action.payload.id);
             if (existingIndex > -1) {
-                const newItems = [...state.items];
-                newItems[existingIndex].quantity += action.payload.quantity;
-                return { ...state, items: newItems };
+                return {
+                    ...state,
+                    items: state.items.map((item, index) =>
+                        index === existingIndex
+                            ? { ...item, quantity: item.quantity + action.payload.quantity }
+                            : item
+                    ),
+                };
             }
             return { ...state, items: [...state.items, action.payload] };
         }
@@ -57,6 +61,8 @@ function cartReducer(state: CartState, action: CartAction): CartState {
             return { ...state, isOpen: !state.isOpen };
         case 'CLOSE_CART':
             return { ...state, isOpen: false };
+        case 'SET_ITEMS':
+            return { ...state, items: action.payload };
         default:
             return state;
     }
@@ -75,11 +81,38 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
     const [state, dispatch] = useReducer(cartReducer, { items: [], isOpen: false });
 
+    // Load cart from localStorage on init
+    React.useEffect(() => {
+        const savedCart = localStorage.getItem('phin_gift_cart');
+        if (savedCart) {
+            try {
+                const items = JSON.parse(savedCart);
+                if (Array.isArray(items)) {
+                    dispatch({ type: 'SET_ITEMS', payload: items });
+                }
+            } catch (e) {
+                console.error('Failed to parse cart from localStorage', e);
+            }
+        }
+    }, []);
+
+    // Save cart to localStorage on change
+    React.useEffect(() => {
+        localStorage.setItem('phin_gift_cart', JSON.stringify(state.items));
+    }, [state.items]);
+
     const totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
     const totalPrice = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     const addToCart = (item: Omit<CartItem, 'id'>) => {
-        const id = `${item.productId}-${item.material}-${item.size}-${item.engravingText}`;
+        // Stringify attributes for unique ID generation
+        const attrStr = item.attributes
+            ? Object.entries(item.attributes).sort(([k1], [k2]) => k1.localeCompare(k2)).map(([k, v]) => {
+                const valStr = v && typeof v === 'object' ? (v as any).en || (v as any).vi : String(v);
+                return `${k}:${valStr}`;
+            }).join('|')
+            : 'no-attrs';
+        const id = `${item.productId}-${attrStr}-${item.engravingText || 'no-engraving'}`;
         dispatch({ type: 'ADD_ITEM', payload: { ...item, id } });
     };
 
