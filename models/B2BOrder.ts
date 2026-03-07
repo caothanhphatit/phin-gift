@@ -13,6 +13,10 @@ export interface IB2BOrder extends Document {
     logoImageUrl?: string;
     logoDescription?: string;
     notes?: string;
+    requestDesignUrl?: string;
+    requestDesignPublicId?: string;
+    finalDesignUrl?: string;
+    finalDesignPublicId?: string;
     status: 'Pending' | 'Contacted' | 'In Progress' | 'Completed' | 'Cancelled';
     createdAt: Date;
     updatedAt: Date;
@@ -20,7 +24,7 @@ export interface IB2BOrder extends Document {
 
 const B2BOrderSchema: Schema = new Schema(
     {
-        companyName: { type: String, required: true },
+        companyName: { type: String },
         contactName: { type: String, required: true },
         email: { type: String, required: true },
         phone: { type: String, required: true },
@@ -32,6 +36,10 @@ const B2BOrderSchema: Schema = new Schema(
         logoImageUrl: { type: String },
         logoDescription: { type: String },
         notes: { type: String },
+        requestDesignUrl: { type: String },
+        requestDesignPublicId: { type: String },
+        finalDesignUrl: { type: String },
+        finalDesignPublicId: { type: String },
         status: {
             type: String,
             enum: ['Pending', 'Contacted', 'In Progress', 'Completed', 'Cancelled'],

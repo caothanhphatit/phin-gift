@@ -41,20 +41,23 @@ export default function Navbar() {
         {
             label: t('products'),
             href: '/products',
-            dropdown: categories.length > 0 
-                ? categories.map(c => ({
-                    label: c.name[locale as keyof typeof c.name] || c.name.en,
-                    href: `/products?category=${c._id}`
-                }))
-                : [
-                    { label: t('inox_filter'), href: '/products?category=inox' },
-                    { label: t('aluminum_filter'), href: '/products?category=nhom' },
-                    { label: t('custom_logo'), href: '/products/phin-ca-phe-khac-logo' },
-                ],
+            dropdown: [
+                ...(categories.length > 0
+                    ? categories.map(c => ({
+                        label: c.name[locale as keyof typeof c.name] || c.name.en,
+                        href: `/products?category=${c._id}`,
+                        divider: false,
+                    }))
+                    : [
+                        { label: t('inox_filter'), href: '/products?category=inox', divider: false },
+                        { label: t('aluminum_filter'), href: '/products?category=nhom', divider: false },
+                    ]),
+                { label: locale === 'en' ? '🏢 B2B / Custom Logo' : '🏢 Đặt Hàng Doanh Nghiệp', href: '/products/phin-ca-phe-khac-logo', divider: true },
+            ],
         },
         { label: t('blog'), href: '/blog' },
         { label: t('about'), href: '/about' },
-        { label: t('contact'), href: '/contact' },
+        { label: t('contact'), href: '/products/phin-ca-phe-khac-logo' },
     ];
 
     useEffect(() => {
@@ -126,7 +129,10 @@ export default function Navbar() {
                                                         <Link
                                                             key={item.href}
                                                             href={item.href}
-                                                            className="block px-5 py-3 text-sm text-[var(--color-brown)] hover:bg-[var(--color-cream)] hover:text-[var(--color-gold)] transition-colors duration-150"
+                                                            className={`block px-5 py-3 text-sm transition-colors duration-150 ${(item as any).divider
+                                                                    ? 'border-t border-gray-100 text-[var(--color-gold)] font-semibold hover:bg-[var(--color-cream)] mt-1'
+                                                                    : 'text-[var(--color-brown)] hover:bg-[var(--color-cream)] hover:text-[var(--color-gold)]'
+                                                                }`}
                                                         >
                                                             {item.label}
                                                         </Link>
@@ -151,20 +157,30 @@ export default function Navbar() {
                         {/* Right actions */}
                         <div className="flex items-center gap-3">
                             {/* Language Switcher */}
-                            <div className="hidden md:flex items-center text-xs font-semibold text-white/80 border border-white/20 rounded p-1 mx-2">
-                                <button
-                                    onClick={() => changeLanguage('vi')}
-                                    className={`px-2 py-1 tracking-wider ${locale === 'vi' ? 'bg-white/20 text-white rounded-sm' : 'hover:text-white'}`}
-                                >
-                                    VI
-                                </button>
-                                <span className="opacity-30">|</span>
-                                <button
-                                    onClick={() => changeLanguage('en')}
-                                    className={`px-2 py-1 tracking-wider ${locale === 'en' ? 'bg-white/20 text-white rounded-sm' : 'hover:text-white'}`}
-                                >
-                                    EN
-                                </button>
+                            <div className="hidden md:flex flex-col items-center gap-1 mx-2">
+                                <div className="flex items-center text-xs font-semibold text-white/80 border border-white/20 rounded p-1">
+                                    <div className="relative group">
+                                        <button
+                                            onClick={() => changeLanguage('vi')}
+                                            className={`px-2 py-1 tracking-wider ${locale === 'vi' ? 'bg-white/20 text-white rounded-sm' : 'hover:text-white'}`}
+                                        >
+                                            VI
+                                        </button>
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+                                            <div className="bg-[var(--color-brown-dark)] border border-white/10 text-white/80 text-[10px] rounded px-2 py-1.5 whitespace-nowrap shadow-lg">
+                                                🇻🇳 Vietnamese locale coming soon
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span className="opacity-30">|</span>
+                                    <button
+                                        onClick={() => changeLanguage('en')}
+                                        className={`px-2 py-1 tracking-wider ${locale === 'en' ? 'bg-white/20 text-white rounded-sm' : 'hover:text-white'}`}
+                                    >
+                                        EN
+                                    </button>
+                                </div>
+                                <span className="text-[9px] text-[var(--color-gold)]/70 tracking-wider whitespace-nowrap">🇻🇳 Proudly Made in Vietnam</span>
                             </div>
 
                             <Link
@@ -223,20 +239,25 @@ export default function Navbar() {
                             </div>
 
                             {/* Mobile Language Switcher */}
-                            <div className="flex items-center justify-center gap-4 py-4 border-b border-white/5 mx-6">
-                                <button
-                                    onClick={() => changeLanguage('vi')}
-                                    className={`flex items-center gap-2 text-sm font-semibold tracking-wider ${locale === 'vi' ? 'text-[var(--color-gold)]' : 'text-white/60'}`}
-                                >
-                                    Tiếng Việt {locale === 'vi' && '✓'}
-                                </button>
-                                <span className="text-white/20">|</span>
-                                <button
-                                    onClick={() => changeLanguage('en')}
-                                    className={`flex items-center gap-2 text-sm font-semibold tracking-wider ${locale === 'en' ? 'text-[var(--color-gold)]' : 'text-white/60'}`}
-                                >
-                                    English {locale === 'en' && '✓'}
-                                </button>
+                            <div className="flex flex-col items-center py-4 border-b border-white/5 mx-6 gap-3">
+                                <div className="flex items-center justify-center gap-4">
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => changeLanguage('vi')}
+                                            className={`flex items-center gap-2 text-sm font-semibold tracking-wider ${locale === 'vi' ? 'text-[var(--color-gold)]' : 'text-white/60'}`}
+                                        >
+                                            Tiếng Việt {locale === 'vi' && '✓'}
+                                        </button>
+                                    </div>
+                                    <span className="text-white/20">|</span>
+                                    <button
+                                        onClick={() => changeLanguage('en')}
+                                        className={`flex items-center gap-2 text-sm font-semibold tracking-wider ${locale === 'en' ? 'text-[var(--color-gold)]' : 'text-white/60'}`}
+                                    >
+                                        English {locale === 'en' && '✓'}
+                                    </button>
+                                </div>
+                                <p className="text-[10px] text-white/40 tracking-wide">🇻🇳 Proudly Made in Vietnam · Vietnamese locale coming soon</p>
                             </div>
 
                             <div className="flex-1 overflow-y-auto py-2">

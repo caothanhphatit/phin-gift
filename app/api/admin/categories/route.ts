@@ -2,10 +2,23 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Category from '@/models/Category';
 
-export async function GET() {
+import Classification from '@/models/Classification';
+
+export async function GET(request: Request) {
     try {
         await dbConnect();
-        const categories = await Category.find({}).sort({ createdAt: -1 }).lean();
+        const { searchParams } = new URL(request.url);
+        const includeClassifications = searchParams.get('includeClassifications') === 'true';
+
+        let query = Category.find({}).sort({ createdAt: -1 });
+
+        if (includeClassifications) {
+            // Need to ensure the Classification model is registered before populating
+            require('@/models/Classification');
+            query = query.populate('classificationIds');
+        }
+
+        const categories = await query.lean();
         return NextResponse.json({ success: true, data: categories });
     } catch (error) {
         return NextResponse.json({ success: false, error: 'Failed to fetch categories' }, { status: 500 });

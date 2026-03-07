@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { Link } from '@/i18n/routing';
 import AnimateSection from '@/components/AnimateSection';
-import ProductDetailClient from '@/components/ProductDetailClient';
+import ProductDetailClient from '@/components/product/ProductDetailClient';
 import { getTranslations } from 'next-intl/server';
 import { getBaseUrl } from '@/lib/utils';
 
@@ -15,7 +15,7 @@ interface Props {
 async function getProductBySlug(slug: string) {
     try {
         const baseUrl = await getBaseUrl();
-        
+
         const res = await fetch(`${baseUrl}/api/admin/products?limit=100`, { cache: 'no-store' });
         const json = await res.json();
         return json.data?.find((p: any) => p.slug === slug);
@@ -31,7 +31,7 @@ export async function generateStaticParams() {
         const res = await fetch(`${baseUrl}/api/admin/products?limit=100`, { cache: 'no-store' });
         const json = await res.json();
         const products = json.data || [];
-        
+
         return products.flatMap((p: any) => [
             { slug: p.slug, locale: 'vi' },
             { slug: p.slug, locale: 'en' }
@@ -98,7 +98,7 @@ export default async function ProductDetailPage({ params }: Props) {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            <ProductDetailClient product={product} />
+            <ProductDetailClient product={product} locale={locale} />
         </>
     );
 }

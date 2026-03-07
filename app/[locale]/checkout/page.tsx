@@ -79,7 +79,7 @@ export default function CheckoutPage() {
                         Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ liên hệ trong vòng 24 giờ để xác nhận đơn hàng.
                     </p>
                     <p className="text-sm text-[var(--color-text-muted)] mb-8">
-                        Liên hệ: <a href="tel:+84909806977" className="text-[var(--color-gold)]">(+84) 909 80 69 77</a>
+                        Liên hệ: <a href="tel:+84909806977" className="text-[var(--color-gold)]">(+84)35 9331 365</a>
                     </p>
                     <Link href="/products" className="btn-primary">Tiếp Tục Mua Hàng</Link>
                 </motion.div>

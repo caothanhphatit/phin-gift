@@ -125,6 +125,22 @@ export default function ProductListingClient({ initialProducts }: Props) {
                                     >
                                         {t('nhomFilter')}
                                     </button>
+
+                                    {/* Fixed B2B Category */}
+                                    <div className="pt-3 mt-1 border-t border-gray-200">
+                                        <Link
+                                            href="/products/phin-ca-phe-khac-logo"
+                                            className="flex items-center gap-2 text-sm font-semibold text-[var(--color-gold)] hover:text-[var(--color-brown)] transition-colors group"
+                                        >
+                                            <span className="text-base">🏢</span>
+                                            <span>
+                                                {locale === 'en' ? 'B2B / Custom Logo' : 'Đặt Hàng Doanh Nghiệp'}
+                                            </span>
+                                        </Link>
+                                        <p className="text-xs text-gray-400 mt-1 pl-6">
+                                            {locale === 'en' ? 'Bulk orders & logo engraving' : 'Sỉ & Khắc Logo Theo Yêu Cầu'}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 

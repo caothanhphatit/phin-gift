@@ -15,7 +15,7 @@ interface Product {
     variants: any[];
     categories: any[];
     images: any[];
-    isActive: boolean;
+    status: 'draft' | 'published';
     stock: number;
 }
 
@@ -94,9 +94,9 @@ function ProductsList() {
             <div className="flex gap-4">
                 <form onSubmit={handleSearch} className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
-                    <input 
-                        type="text" 
-                        placeholder="Search products..." 
+                    <input
+                        type="text"
+                        placeholder="Search products..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 outline-none focus:border-[#C9A84C]/50 transition-colors"
@@ -146,8 +146,8 @@ function ProductsList() {
                                             <span className={totalStock === 0 ? 'text-red-400' : 'text-gray-300'}>{totalStock}</span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${p.isActive ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
-                                                {p.isActive ? 'Active' : 'Inactive'}{totalStock === 0 ? ' (Out of Stock)' : ''}
+                                            <span className={`text-xs px-2.5 py-1 rounded-full font-medium uppercase tracking-wider ${p.status === 'published' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'}`}>
+                                                {p.status}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
@@ -155,7 +155,7 @@ function ProductsList() {
                                                 <Link href={`/admin/products/${p._id}`} className="p-1.5 text-gray-500 hover:text-white hover:bg-white/[0.06] rounded-md transition-colors">
                                                     <Edit2 size={14} />
                                                 </Link>
-                                                <button 
+                                                <button
                                                     onClick={() => handleDelete(p._id)}
                                                     className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/[0.06] rounded-md transition-colors"
                                                 >
@@ -174,7 +174,7 @@ function ProductsList() {
             {/* Pagination */}
             {totalPages > 1 && (
                 <div className="flex justify-center gap-2">
-                    <button 
+                    <button
                         onClick={() => router.push(`/admin/products?page=${Math.max(1, page - 1)}`)}
                         disabled={page === 1}
                         className="px-3 py-1 bg-white/[0.03] text-sm text-gray-400 rounded disabled:opacity-50"
@@ -182,7 +182,7 @@ function ProductsList() {
                         Previous
                     </button>
                     <span className="px-3 py-1 text-sm text-white">Page {page} of {totalPages}</span>
-                    <button 
+                    <button
                         onClick={() => router.push(`/admin/products?page=${Math.min(totalPages, page + 1)}`)}
                         disabled={page === totalPages}
                         className="px-3 py-1 bg-white/[0.03] text-sm text-gray-400 rounded disabled:opacity-50"

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
     LayoutDashboard,
     Package,
@@ -15,12 +15,14 @@ import {
     ChevronRight,
     Coffee,
     LogOut,
+    ListTree,
 } from 'lucide-react';
 
 const navItems = [
     { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { label: 'Products', href: '/admin/products', icon: Package },
     { label: 'Categories', href: '/admin/categories', icon: Tag },
+    { label: 'Classifications', href: '/admin/classifications', icon: ListTree },
     { label: 'Orders', href: '/admin/orders', icon: ShoppingBag },
     { label: 'Customers', href: '/admin/customers', icon: Users },
     { label: 'Blog', href: '/admin/blog', icon: FileText },
@@ -31,11 +33,24 @@ const navItems = [
 
 export default function AdminSidebar() {
     const pathname = usePathname();
+    const router = useRouter();
 
     const isActive = (href: string) => {
         if (href === '/admin') return pathname === '/admin';
         return pathname.startsWith(href);
     };
+
+    const handleLogout = async () => {
+        try {
+            await fetch('/api/admin/auth/logout', { method: 'POST' });
+            window.location.href = '/admin/login';
+        } catch {
+            console.error('Logout failed');
+        }
+    };
+
+    // Don't render sidebar on the login page
+    if (pathname === '/admin/login') return null;
 
     return (
         <aside className="fixed top-0 left-0 h-screen w-64 bg-[#0A0C12] border-r border-white/[0.06] flex flex-col z-50">
@@ -59,8 +74,8 @@ export default function AdminSidebar() {
                         key={href}
                         href={href}
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 group ${isActive(href)
-                                ? 'bg-[#C9A84C]/10 text-[#C9A84C] font-medium'
-                                : 'text-gray-400 hover:text-white hover:bg-white/[0.04]'
+                            ? 'bg-[#C9A84C]/10 text-[#C9A84C] font-medium'
+                            : 'text-gray-400 hover:text-white hover:bg-white/[0.04]'
                             }`}
                     >
                         <Icon size={16} className={`flex-shrink-0 ${isActive(href) ? 'text-[#C9A84C]' : 'text-gray-500 group-hover:text-gray-300'}`} />
@@ -80,7 +95,7 @@ export default function AdminSidebar() {
                         <p className="text-sm text-white font-medium truncate">Admin</p>
                         <p className="text-xs text-gray-500 truncate">Super Admin</p>
                     </div>
-                    <button className="text-gray-500 hover:text-white transition-colors">
+                    <button onClick={handleLogout} className="text-gray-500 hover:text-white transition-colors" title="Logout">
                         <LogOut size={15} />
                     </button>
                 </div>
