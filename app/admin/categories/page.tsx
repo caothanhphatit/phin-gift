@@ -10,12 +10,19 @@ interface Category {
     name: { en: string; vi: string };
     slug: string;
     description: { en: string; vi: string };
+    classificationIds: string[];
     isActive: boolean;
+}
+
+interface Classification {
+    _id: string;
+    name: { en: string; vi: string };
 }
 
 export default function CategoriesPage() {
     // const locale = useLocale(); // Removed
     const [categories, setCategories] = useState<Category[]>([]);
+    const [classifications, setClassifications] = useState<Classification[]>([]);
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -23,12 +30,24 @@ export default function CategoriesPage() {
         name: { en: '', vi: '' },
         slug: '',
         description: { en: '', vi: '' },
+        classificationIds: [] as string[],
         isActive: true,
     });
 
     useEffect(() => {
         fetchCategories();
+        fetchClassifications();
     }, []);
+
+    const fetchClassifications = async () => {
+        try {
+            const res = await fetch('/api/admin/classifications?activeOnly=true');
+            const data = await res.json();
+            if (data.success) setClassifications(data.data);
+        } catch (error) {
+            console.error('Failed to fetch classifications', error);
+        }
+    };
 
     const fetchCategories = async () => {
         try {
@@ -74,6 +93,7 @@ export default function CategoriesPage() {
             name: { ...category.name },
             slug: category.slug,
             description: { ...category.description },
+            classificationIds: category.classificationIds || [],
             isActive: category.isActive,
         });
         setIsEditing(true);
@@ -98,6 +118,7 @@ export default function CategoriesPage() {
             name: { en: '', vi: '' },
             slug: '',
             description: { en: '', vi: '' },
+            classificationIds: [],
             isActive: true,
         });
     };
@@ -121,7 +142,7 @@ export default function CategoriesPage() {
                         </button>
                     )}
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label className="block text-xs text-gray-400 mb-1.5">Name (English)</label>
@@ -154,8 +175,8 @@ export default function CategoriesPage() {
                         />
                     </div>
                     <div className="md:col-span-2">
-                         <label className="block text-xs text-gray-400 mb-1.5">Description (Optional)</label>
-                         <div className="grid grid-cols-2 gap-4">
+                        <label className="block text-xs text-gray-400 mb-1.5">Description (Optional)</label>
+                        <div className="grid grid-cols-2 gap-4">
                             <input
                                 type="text"
                                 placeholder="English"
@@ -170,10 +191,36 @@ export default function CategoriesPage() {
                                 onChange={(e) => setFormData({ ...formData, description: { ...formData.description, vi: e.target.value } })}
                                 className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-[#C9A84C]/50 transition-colors"
                             />
-                         </div>
+                        </div>
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="block text-xs text-gray-400 mb-1.5">Linked Classifications (Optional)</label>
+                        <p className="text-[10px] text-gray-500 mb-2">Select the technical specifications schemas that apply to this category.</p>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-white/[0.02] p-4 rounded-lg border border-white/[0.05]">
+                            {classifications.map(cls => (
+                                <label key={cls._id} className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="rounded border-gray-600 bg-gray-700 text-[#C9A84C] focus:ring-[#C9A84C]"
+                                        checked={formData.classificationIds.includes(cls._id)}
+                                        onChange={(e) => {
+                                            if (e.target.checked) {
+                                                setFormData({ ...formData, classificationIds: [...formData.classificationIds, cls._id] });
+                                            } else {
+                                                setFormData({ ...formData, classificationIds: formData.classificationIds.filter(id => id !== cls._id) });
+                                            }
+                                        }}
+                                    />
+                                    <span className="text-sm text-gray-300">{cls.name.en}</span>
+                                </label>
+                            ))}
+                            {classifications.length === 0 && (
+                                <span className="text-xs text-gray-500 italic">No active classifications found. Create them first.</span>
+                            )}
+                        </div>
                     </div>
                 </div>
-                
+
                 <div className="flex justify-end">
                     <button type="submit" className="px-4 py-2 bg-[#C9A84C] hover:bg-[#b8973b] text-black rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
                         {isEditing ? <Edit2 size={16} /> : <Plus size={16} />}
@@ -196,9 +243,13 @@ export default function CategoriesPage() {
                     </thead>
                     <tbody>
                         {categories.map((category) => (
-                            <tr key={category._id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                            <tr
+                                key={category._id}
+                                onClick={() => handleEdit(category)}
+                                className="border-b border-white/[0.04] hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                            >
                                 <td className="px-6 py-4">
-                                    <p className="text-sm text-white font-medium">{category.name.vi}</p>
+                                    <p className="text-sm text-white font-medium group-hover:text-[#C9A84C] transition-colors">{category.name.vi}</p>
                                     <p className="text-xs text-gray-500">{category.name.en}</p>
                                 </td>
                                 <td className="px-6 py-4 text-sm text-gray-400 font-mono">{category.slug}</td>
@@ -212,14 +263,14 @@ export default function CategoriesPage() {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="flex items-center gap-2">
-                                        <button 
+                                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                        <button
                                             onClick={() => handleEdit(category)}
                                             className="p-1.5 text-gray-500 hover:text-white hover:bg-white/[0.06] rounded-md transition-colors"
                                         >
                                             <Edit2 size={14} />
                                         </button>
-                                        <button 
+                                        <button
                                             onClick={() => handleDelete(category._id)}
                                             className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/[0.06] rounded-md transition-colors"
                                         >

@@ -1,18 +1,8 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { PhoneCall, Eye } from 'lucide-react';
-import { getBaseUrl } from '@/lib/utils';
-
-export const dynamic = 'force-dynamic';
-
-async function getB2BOrders() {
-    try {
-        const baseUrl = await getBaseUrl();
-        const res = await fetch(`${baseUrl}/api/admin/b2b-orders`, { cache: 'no-store' });
-        const json = await res.json();
-        return json.data || [];
-    } catch {
-        return [];
-    }
-}
 
 const statusStyles: Record<string, string> = {
     Pending: 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20',
@@ -22,12 +12,22 @@ const statusStyles: Record<string, string> = {
     Cancelled: 'bg-red-500/10 text-red-400 border border-red-500/20',
 };
 
-export default async function B2BOrdersPage() {
-    const b2bOrders = await getB2BOrders();
+export default function B2BOrdersPage() {
+    const router = useRouter();
+    const [b2bOrders, setB2bOrders] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const pending = b2bOrders.filter((o: any) => o.status === 'Pending').length;
-    const inProgress = b2bOrders.filter((o: any) => o.status === 'In Progress').length;
-    const completed = b2bOrders.filter((o: any) => o.status === 'Completed').length;
+    useEffect(() => {
+        fetch('/api/admin/b2b-orders')
+            .then(r => r.json())
+            .then(json => setB2bOrders(json.data || []))
+            .catch(() => { })
+            .finally(() => setLoading(false));
+    }, []);
+
+    const pending = b2bOrders.filter(o => o.status === 'Pending').length;
+    const inProgress = b2bOrders.filter(o => o.status === 'In Progress').length;
+    const completed = b2bOrders.filter(o => o.status === 'Completed').length;
 
     return (
         <div className="space-y-6">
@@ -59,7 +59,9 @@ export default async function B2BOrdersPage() {
             </div>
 
             <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl overflow-hidden">
-                {b2bOrders.length === 0 ? (
+                {loading ? (
+                    <div className="px-6 py-16 text-center text-gray-500 text-sm">Loading...</div>
+                ) : b2bOrders.length === 0 ? (
                     <div className="px-6 py-16 text-center text-gray-500 text-sm">No B2B orders yet.</div>
                 ) : (
                     <table className="w-full">
@@ -72,9 +74,13 @@ export default async function B2BOrdersPage() {
                         </thead>
                         <tbody>
                             {b2bOrders.map((o: any) => (
-                                <tr key={o._id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                                <tr
+                                    key={o._id}
+                                    onClick={() => router.push(`/admin/b2b-orders/${o._id}`)}
+                                    className="border-b border-white/[0.04] hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                                >
                                     <td className="px-6 py-4">
-                                        <p className="text-sm text-white font-medium">{o.companyName}</p>
+                                        <p className="text-sm text-white font-medium group-hover:text-[#C9A84C] transition-colors">{o.companyName}</p>
                                     </td>
                                     <td className="px-6 py-4">
                                         <p className="text-sm text-gray-300">{o.contactName}</p>
@@ -87,9 +93,22 @@ export default async function B2BOrdersPage() {
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-400">{new Date(o.createdAt).toLocaleDateString('vi-VN')}</td>
                                     <td className="px-6 py-4">
-                                        <div className="flex items-center gap-1">
-                                            <button className="p-1.5 text-gray-500 hover:text-white hover:bg-white/[0.06] rounded-md transition-colors"><Eye size={14} /></button>
-                                            <a href={`tel:${o.phone}`} className="p-1.5 text-gray-500 hover:text-green-400 hover:bg-green-500/[0.06] rounded-md transition-colors"><PhoneCall size={14} /></a>
+                                        <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                                            <button
+                                                onClick={() => router.push(`/admin/b2b-orders/${o._id}`)}
+                                                className="p-1.5 text-gray-500 hover:text-white hover:bg-white/[0.06] rounded-md transition-colors"
+                                                title="View Detail"
+                                            >
+                                                <Eye size={14} />
+                                            </button>
+                                            <a
+                                                href={`tel:${o.phone}`}
+                                                className="p-1.5 text-gray-500 hover:text-green-400 hover:bg-green-500/[0.06] rounded-md transition-colors"
+                                                title={`Call ${o.contactName}`}
+                                                onClick={e => e.stopPropagation()}
+                                            >
+                                                <PhoneCall size={14} />
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>

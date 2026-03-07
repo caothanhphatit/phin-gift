@@ -1,16 +1,14 @@
 import B2BCustomOrderForm from '@/components/B2BCustomOrderForm';
-import { getTranslations } from 'next-intl/server';
 import { Metadata } from 'next';
 
 export async function generateMetadata({
-    params: { locale }
+    params,
 }: {
-    params: { locale: string }
+    params: Promise<{ locale: string }>
 }): Promise<Metadata> {
+    const { locale } = await params;
     const defaultMetaTitle = 'PhinGift – Phin Cà Phê Khắc Logo Dành Cho Doanh Nghiệp';
     const defaultMetaDescription = 'Dịch vụ khắc logo doanh nghiệp lên phin cà phê inox/nhôm cao cấp. Quà tặng sự kiện, hội nghị, Tết doanh nghiệp. MOQ từ 50 phin.';
-
-    // Wait until product translations are mature to use `getTranslations` dynamically, for now provide robust defaults
     const isEn = locale === 'en';
     return {
         title: isEn ? 'Custom Logo Coffee Filters for B2B | PhinGift' : defaultMetaTitle,

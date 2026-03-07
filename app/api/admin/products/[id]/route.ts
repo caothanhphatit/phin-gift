@@ -19,10 +19,20 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         await dbConnect();
         const { id } = await params;
         const body = await request.json();
-        const product = await Product.findByIdAndUpdate(id, body, { new: true, runValidators: true });
+
+        // Remove IDs and metadata to avoid immutable field errors
+        const { _id, __v, createdAt, updatedAt, ...updateData } = body;
+
+        const product = await Product.findOneAndUpdate(
+            { _id: id },
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+
         if (!product) return NextResponse.json({ success: false, error: 'Product not found' }, { status: 404 });
         return NextResponse.json({ success: true, data: product });
     } catch (error: any) {
+        console.error('Update Product Error:', error);
         return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
 }

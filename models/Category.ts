@@ -10,6 +10,7 @@ export interface ICategory extends Document {
         en: string;
         vi: string;
     };
+    classificationIds: mongoose.Types.ObjectId[];
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -26,6 +27,7 @@ const CategorySchema: Schema = new Schema(
             en: { type: String },
             vi: { type: String },
         },
+        classificationIds: [{ type: Schema.Types.ObjectId, ref: 'Classification' }],
         isActive: { type: Boolean, default: true },
     },
     {

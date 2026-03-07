@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Edit2, Trash2, Loader2 } from 'lucide-react';
 
@@ -19,6 +20,7 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function BlogPage() {
+    const router = useRouter();
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -88,9 +90,13 @@ export default function BlogPage() {
                         </thead>
                         <tbody>
                             {posts.map((post) => (
-                                <tr key={post._id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                                <tr
+                                    key={post._id}
+                                    onClick={() => router.push(`/admin/blog/${post._id}`)}
+                                    className="border-b border-white/[0.04] hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                                >
                                     <td className="px-6 py-4">
-                                        <p className="text-sm text-white font-medium">{post.title?.vi}</p>
+                                        <p className="text-sm text-white font-medium group-hover:text-[#C9A84C] transition-colors">{post.title?.vi}</p>
                                         <p className="text-xs text-gray-500">{post.title?.en}</p>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-400 font-mono">{post.slug}</td>
@@ -102,11 +108,11 @@ export default function BlogPage() {
                                     <td className="px-6 py-4 text-sm text-gray-300">{post.views || 0}</td>
                                     <td className="px-6 py-4 text-sm text-gray-400">{new Date(post.createdAt).toLocaleDateString()}</td>
                                     <td className="px-6 py-4 text-right">
-                                        <div className="flex items-center justify-end gap-2">
+                                        <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                                             <Link href={`/admin/blog/${post._id}`} className="p-1.5 text-gray-500 hover:text-white hover:bg-white/[0.06] rounded-md transition-colors">
                                                 <Edit2 size={14} />
                                             </Link>
-                                            <button 
+                                            <button
                                                 onClick={() => handleDelete(post._id)}
                                                 className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/[0.06] rounded-md transition-colors"
                                             >

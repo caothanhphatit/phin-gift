@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, X, CheckCircle, Info } from 'lucide-react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import Image from 'next/image';
 import { useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
@@ -28,8 +28,9 @@ export default function B2BCustomOrderForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+    const [uploadPreview, setUploadPreview] = useState<string | null>(null);
 
-    const { register, handleSubmit, control, watch, formState: { errors } } = useForm<FormValues>({
+    const { register, handleSubmit, watch, formState: { errors } } = useForm<FormValues>({
         defaultValues: {
             material: 'inox',
             size: '200ml',
@@ -45,33 +46,31 @@ export default function B2BCustomOrderForm() {
     const onSubmit = async (data: FormValues) => {
         setIsSubmitting(true);
         try {
-            // Netlify Form Submission Requirements:
-            // Must URL-encode the data, including files (which require FormData)
             const formData = new FormData();
-            formData.append('form-name', 'b2b-custom-order');
 
-            // Append top level fields
+            // Append all text fields
             Object.entries(data).forEach(([key, value]) => {
-                if (value !== undefined) {
+                if (value !== undefined && value !== null) {
                     formData.append(key, value.toString());
                 }
             });
 
-            // Append File if uploaded
+            // Append file if present
             if (designOption === 'upload' && uploadedFile) {
                 formData.append('logoFile', uploadedFile);
             }
 
-            const res = await fetch('/netlify-forms.html', {
+            const res = await fetch('/api/b2b-orders', {
                 method: 'POST',
-                body: formData
+                body: formData,
             });
 
             if (res.ok) {
                 setIsSuccess(true);
             } else {
-                console.error("Netlify form error:", res.status);
-                alert(isEn ? "Submission failed. Please try again." : "Lỗi khi gửi form. Vui lòng thử lại.");
+                const err = await res.json().catch(() => ({}));
+                console.error('Submit error:', err);
+                alert(isEn ? 'Submission failed. Please try again.' : 'Lỗi khi gửi form. Vui lòng thử lại.');
             }
         } catch (error) {
             console.error('Failed to submit form:', error);
@@ -83,8 +82,22 @@ export default function B2BCustomOrderForm() {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            setUploadedFile(e.target.files[0]);
+            const file = e.target.files[0];
+            setUploadedFile(file);
+            // Create preview for images
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onloadend = () => setUploadPreview(reader.result as string);
+                reader.readAsDataURL(file);
+            } else {
+                setUploadPreview(null);
+            }
         }
+    };
+
+    const clearFile = () => {
+        setUploadedFile(null);
+        setUploadPreview(null);
     };
 
     return (
@@ -128,26 +141,15 @@ export default function B2BCustomOrderForm() {
                         <p className="text-white/80 text-sm">
                             {isEn
                                 ? 'Custom engraving is available exclusively for bulk orders starting from 50 pieces to ensure the highest quality setup and production.'
-                                : 'Dịch vụ khắc logo theo yêu cầu áp dụng đặc quyền cho các đơn hàng sỉ từ 50 đơn vị trở lên nhằm đảo bảo chất lượng sản xuất tốt nhất.'}
+                                : 'Dịch vụ khắc logo theo yêu cầu áp dụng đặc quyền cho các đơn hàng sỉ từ 50 đơn vị trở lên nhằm đảm bảo chất lượng sản xuất tốt nhất.'}
                         </p>
                     </div>
                 </motion.div>
 
-                {/* Netlify form: data-netlify="true" enables detection, honeypot field catches spam bots */}
                 <form
-                    name="b2b-custom-order"
-                    method="POST"
-                    data-netlify="true"
-                    data-netlify-honeypot="bot-field"
-                    encType="multipart/form-data"
                     onSubmit={handleSubmit(onSubmit)}
                     className="space-y-12 bg-white p-8 md:p-12 rounded-2xl shadow-xl border border-gray-100"
                 >
-                    {/* form-name tells Netlify which form this AJAX submission belongs to */}
-                    <input type="hidden" name="form-name" value="b2b-custom-order" />
-                    {/* Honeypot: hidden from users, bots will fill it in and get rejected */}
-                    <p className="hidden"><label>Skip this: <input name="bot-field" /></label></p>
-
                     {/* 3. Product Customization */}
                     <div className="space-y-8">
                         <div>
@@ -272,30 +274,43 @@ export default function B2BCustomOrderForm() {
                                     exit={{ opacity: 0, height: 0 }}
                                     className="overflow-hidden"
                                 >
-                                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors relative cursor-pointer group">
-                                        <input
-                                            type="file"
-                                            name="logoFile"
-                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                            accept=".png,.jpg,.jpeg,.svg,.pdf"
-                                            onChange={handleFileChange}
-                                        />
-                                        <Upload className="mx-auto text-gray-400 mb-3 group-hover:text-[var(--color-gold)] transition-colors" size={32} />
-                                        {uploadedFile ? (
-                                            <div className="text-sm font-medium text-[var(--color-brown)]">
-                                                {uploadedFile.name}
+                                    {uploadedFile ? (
+                                        <div className="border-2 border-dashed border-[var(--color-gold)] rounded-xl p-6 bg-amber-50 flex items-center gap-4">
+                                            {uploadPreview ? (
+                                                <img src={uploadPreview} alt="Preview" className="w-20 h-20 object-contain rounded border border-gray-200 bg-white" />
+                                            ) : (
+                                                <div className="w-20 h-20 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-3xl">📄</div>
+                                            )}
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-semibold text-[var(--color-brown)] truncate">{uploadedFile.name}</p>
+                                                <p className="text-xs text-gray-500 mt-0.5">{(uploadedFile.size / 1024).toFixed(1)} KB</p>
                                             </div>
-                                        ) : (
-                                            <>
-                                                <div className="text-sm font-semibold text-gray-700">
-                                                    {isEn ? 'Click or drag file to this area to upload' : 'Nhấp hoặc thả file vào đây để tải lên'}
-                                                </div>
-                                                <div className="text-xs text-gray-500 mt-1">
-                                                    {isEn ? 'Accepted formats: PNG, JPG, SVG, PDF' : 'Định dạng hỗ trợ: PNG, JPG, SVG, PDF'}
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
+                                            <button
+                                                type="button"
+                                                onClick={clearFile}
+                                                className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors flex-shrink-0"
+                                            >
+                                                <X size={18} />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors relative cursor-pointer group">
+                                            <input
+                                                type="file"
+                                                name="logoFile"
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                accept=".png,.jpg,.jpeg,.svg,.pdf,.ai,.eps"
+                                                onChange={handleFileChange}
+                                            />
+                                            <Upload className="mx-auto text-gray-400 mb-3 group-hover:text-[var(--color-gold)] transition-colors" size={32} />
+                                            <div className="text-sm font-semibold text-gray-700">
+                                                {isEn ? 'Click or drag file to this area to upload' : 'Nhấp hoặc thả file vào đây để tải lên'}
+                                            </div>
+                                            <div className="text-xs text-gray-500 mt-1">
+                                                {isEn ? 'Accepted formats: PNG, JPG, SVG, PDF, AI, EPS' : 'Định dạng hỗ trợ: PNG, JPG, SVG, PDF, AI, EPS'}
+                                            </div>
+                                        </div>
+                                    )}
                                 </motion.div>
                             ) : (
                                 <motion.div
@@ -331,9 +346,9 @@ export default function B2BCustomOrderForm() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-1">
-                                <label className="text-sm font-semibold text-gray-700">{isEn ? 'Company Name *' : 'Tên Công Ty *'}</label>
+                                <label className="text-sm font-semibold text-gray-700">{isEn ? 'Company Name' : 'Tên Công Ty'}</label>
                                 <input
-                                    {...register('companyName', { required: true })}
+                                    {...register('companyName')}
                                     className={`w-full border ${errors.companyName ? 'border-red-500' : 'border-gray-300'} rounded-lg p-3 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none`}
                                 />
                             </div>

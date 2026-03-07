@@ -125,8 +125,10 @@ export default function ProductListingClient({ initialProducts }: Props) {
                                     >
                                         {t('nhomFilter')}
                                     </button>
+
                                 </div>
                             </div>
+
 
                             {categoryFilter && (
                                 <button
