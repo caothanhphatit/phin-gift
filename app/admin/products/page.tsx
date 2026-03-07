@@ -127,14 +127,18 @@ function ProductsList() {
                                 const totalStock = p.variants?.reduce((sum: number, v: any) => sum + (v.stock || 0), 0) ?? 0;
                                 const catNames = p.categories?.map((c: any) => (typeof c === 'object' ? (c.name?.vi || c.name?.en) : c)).filter(Boolean).join(', ') || '-';
                                 return (
-                                    <tr key={p._id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                                    <tr
+                                        key={p._id}
+                                        onClick={() => router.push(`/admin/products/${p._id}`)}
+                                        className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors cursor-pointer group"
+                                    >
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-lg bg-white/[0.06] border border-white/[0.08] overflow-hidden flex-shrink-0">
                                                     <ProductImage src={p.images?.[0]?.url} alt={p.name?.vi} />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm text-white font-medium">{p.name?.vi}</p>
+                                                    <p className="text-sm text-white font-medium group-hover:text-[#C9A84C] transition-colors">{p.name?.vi}</p>
                                                     <p className="text-xs text-gray-500">{p.name?.en}</p>
                                                 </div>
                                             </div>
@@ -151,7 +155,7 @@ function ProductsList() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                                 <Link href={`/admin/products/${p._id}`} className="p-1.5 text-gray-500 hover:text-white hover:bg-white/[0.06] rounded-md transition-colors">
                                                     <Edit2 size={14} />
                                                 </Link>

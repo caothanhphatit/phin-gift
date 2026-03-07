@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, ListTree, MoreVertical, Pencil, Trash2, Search, Loader2 } from 'lucide-react';
 
@@ -13,6 +14,7 @@ interface Classification {
 }
 
 export default function ClassificationsPage() {
+    const router = useRouter();
     const [classifications, setClassifications] = useState<Classification[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -95,9 +97,13 @@ export default function ClassificationsPage() {
                         {filtered.length > 0 ? filtered.map((c) => {
                             const variantAttributes = c.attributes.filter(a => a.isVariantDefining).length;
                             return (
-                                <tr key={c._id} className="hover:bg-white/[0.02] transition-colors">
+                                <tr
+                                    key={c._id}
+                                    onClick={() => router.push(`/admin/classifications/${c._id}`)}
+                                    className="hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                                >
                                     <td className="px-6 py-4">
-                                        <p className="text-white font-medium">{c.name.en}</p>
+                                        <p className="text-white font-medium group-hover:text-[#C9A84C] transition-colors">{c.name.en}</p>
                                         <p className="text-gray-500 text-xs">{c.name.vi}</p>
                                     </td>
                                     <td className="px-6 py-4 text-gray-300 text-sm">
@@ -114,7 +120,7 @@ export default function ClassificationsPage() {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right">
-                                        <div className="flex items-center justify-end gap-2">
+                                        <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                                             <Link href={`/admin/classifications/${c._id}`} className="p-2 text-gray-400 hover:text-[#C9A84C] hover:bg-[#C9A84C]/10 rounded-lg transition-colors">
                                                 <Pencil size={16} />
                                             </Link>

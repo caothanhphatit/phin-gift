@@ -52,7 +52,6 @@ export default function Navbar() {
                         { label: t('inox_filter'), href: '/products?category=inox', divider: false },
                         { label: t('aluminum_filter'), href: '/products?category=nhom', divider: false },
                     ]),
-                { label: locale === 'en' ? '🏢 B2B / Custom Logo' : '🏢 Đặt Hàng Doanh Nghiệp', href: '/products/phin-ca-phe-khac-logo', divider: true },
             ],
         },
         { label: t('blog'), href: '/blog' },
@@ -130,8 +129,8 @@ export default function Navbar() {
                                                             key={item.href}
                                                             href={item.href}
                                                             className={`block px-5 py-3 text-sm transition-colors duration-150 ${(item as any).divider
-                                                                    ? 'border-t border-gray-100 text-[var(--color-gold)] font-semibold hover:bg-[var(--color-cream)] mt-1'
-                                                                    : 'text-[var(--color-brown)] hover:bg-[var(--color-cream)] hover:text-[var(--color-gold)]'
+                                                                ? 'border-t border-gray-100 text-[var(--color-gold)] font-semibold hover:bg-[var(--color-cream)] mt-1'
+                                                                : 'text-[var(--color-brown)] hover:bg-[var(--color-cream)] hover:text-[var(--color-gold)]'
                                                                 }`}
                                                         >
                                                             {item.label}

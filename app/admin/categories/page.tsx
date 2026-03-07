@@ -243,9 +243,13 @@ export default function CategoriesPage() {
                     </thead>
                     <tbody>
                         {categories.map((category) => (
-                            <tr key={category._id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                            <tr
+                                key={category._id}
+                                onClick={() => handleEdit(category)}
+                                className="border-b border-white/[0.04] hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                            >
                                 <td className="px-6 py-4">
-                                    <p className="text-sm text-white font-medium">{category.name.vi}</p>
+                                    <p className="text-sm text-white font-medium group-hover:text-[#C9A84C] transition-colors">{category.name.vi}</p>
                                     <p className="text-xs text-gray-500">{category.name.en}</p>
                                 </td>
                                 <td className="px-6 py-4 text-sm text-gray-400 font-mono">{category.slug}</td>
@@ -259,7 +263,7 @@ export default function CategoriesPage() {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                         <button
                                             onClick={() => handleEdit(category)}
                                             className="p-1.5 text-gray-500 hover:text-white hover:bg-white/[0.06] rounded-md transition-colors"
